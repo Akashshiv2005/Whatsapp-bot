@@ -167,37 +167,28 @@ class WorkflowEngine:
 
         sections = [
             {
-                "title": "Our Services",
+                "title": "iZone Core Services",
                 "rows": [
-                    {"id": "menu_website", "title": "Website Dev", "description": "Custom websites, e-commerce, CMS & redesign"},
-                    {"id": "menu_software", "title": "Software Dev", "description": "CRM, ERP, billing, payroll & custom software"},
-                    {"id": "menu_mobile", "title": "Mobile Apps", "description": "Android, iOS, Flutter cross-platform apps"},
-                    {"id": "menu_marketing", "title": "SEO & Marketing", "description": "SEO, Google Ads, Meta Ads & lead generation"},
-                    {"id": "menu_communication", "title": "WhatsApp/SMS/Voice", "description": "Official Meta WhatsApp APIs, Bulk SMS & Voice"},
-                    {"id": "menu_student", "title": "Student Services", "description": "Final year projects, internships & training"},
+                    {"id": "menu_website", "title": "Web Development", "description": "Custom websites & e-commerce"},
+                    {"id": "menu_software", "title": "Software Dev", "description": "CRM, ERP & custom software"},
+                    {"id": "menu_mobile", "title": "Mobile Apps", "description": "Android, iOS, Flutter apps"},
+                    {"id": "menu_marketing", "title": "SEO & Marketing", "description": "Digital marketing & lead gen"},
                 ]
             },
             {
-                "title": "Our Management Systems",
+                "title": "Management Systems",
                 "rows": [
-                    {"id": "menu_hms", "title": "Hospital Management HMS", "description": "OPD/IPD, appointments, pharmacy & lab reports"},
-                    {"id": "menu_lms", "title": "Learning Management LMS", "description": "Online courses, live classes, exams & certificates"},
-                    {"id": "menu_tms", "title": "Transport Management TMS", "description": "Fleet logs, driver schedules, GPS & billing"},
-                    {"id": "menu_mms", "title": "Manufacturing MMS", "description": "BOM recipes, production schedules & QA checks"},
-                    {"id": "menu_fms", "title": "Financial Management FMS", "description": "General ledger, AP/AR, bank rec & tax filings"},
-                    {"id": "menu_pms", "title": "Project Management PMS", "description": "Gantt schedules, tasks board & resource timesheets"},
-                    {"id": "menu_ams", "title": "Asset Management AMS", "description": "QR asset tags, custody, service tickets & value"},
-                    {"id": "menu_oms", "title": "Order Management OMS", "description": "Multi-channel sales capture & warehouse release"},
-                    {"id": "menu_wms", "title": "Warehouse Management WMS", "description": "Directed putaway, pick/pack verification & staging"},
-                    {"id": "menu_sms", "title": "School Management SMS", "description": "Student admissions, rosters, grades & fees portal"},
-                    {"id": "menu_bms", "title": "Business Management BMS", "description": "CRM sales pipeline, payroll, items catalog & BI"},
+                    {"id": "menu_hms", "title": "Hospital System HMS", "description": "OPD, IPD & pharmacy"},
+                    {"id": "menu_lms", "title": "Learning System LMS", "description": "Online courses & live classes"},
+                    {"id": "menu_erp", "title": "More ERP Systems", "description": "View all 10+ management systems"},
                 ]
             },
             {
-                "title": "Help & Support",
+                "title": "Support & Other",
                 "rows": [
-                    {"id": "menu_contact", "title": "Contact & Location", "description": "Office address, phone, email & timings"},
-                    {"id": "menu_support", "title": "Talk to Support", "description": "Connect directly with our human specialists"},
+                    {"id": "menu_student", "title": "Student Services", "description": "Final year projects & internships"},
+                    {"id": "menu_contact", "title": "Contact Details", "description": "Office address & email"},
+                    {"id": "menu_support", "title": "Talk to Support", "description": "Connect with human support"},
                 ]
             }
         ]

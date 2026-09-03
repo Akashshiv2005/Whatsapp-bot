@@ -481,6 +481,11 @@ class MessageHandler:
             "support": ("HUMAN_HANDOFF", "menu_support"),
             "talk to support": ("HUMAN_HANDOFF", "menu_support"),
             "menu_support": ("HUMAN_HANDOFF", "menu_support"),
+
+            "20": ("ERP_MENU", "menu_erp"),
+            "erp": ("ERP_MENU", "menu_erp"),
+            "more erp systems": ("ERP_MENU", "menu_erp"),
+            "menu_erp": ("ERP_MENU", "menu_erp"),
         }
 
         matched_state = None
@@ -536,6 +541,12 @@ class MessageHandler:
                     db=db, conv=conv, to=phone, parent_state="STUDENT_MENU",
                     title="Student Services & Projects",
                     description="Select student training or project assistance:"
+                )
+            elif matched_state == "ERP_MENU":
+                await MessageHandler.send_and_log_submenu(
+                    db=db, conv=conv, to=phone, parent_state="ERP_MENU",
+                    title="Management Systems (ERP)",
+                    description="Select a management system to explore:"
                 )
             elif matched_state == "CONTACT_MENU":
                 res = await workflow_engine.send_contact_info(to=phone)
