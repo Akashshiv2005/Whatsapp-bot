@@ -74,10 +74,10 @@ class WhatsAppService:
         except httpx.HTTPStatusError as e:
             error_text = e.response.text
             logger.error(f"WhatsApp API HTTP error ({e.response.status_code}): {error_text}")
-            return {"error": True, "status_code": e.response.status_code, "details": error_text}
+            return {"error": True, "status_code": e.response.status_code, "details": error_text, "payload": payload}
         except (httpx.TimeoutException, httpx.RequestError) as e:
             logger.error(f"WhatsApp API network/timeout error: {e}")
-            return {"error": True, "status_code": 500, "details": str(e)}
+            return {"error": True, "status_code": 500, "details": str(e), "payload": payload}
 
     async def send_text(self, to: str, text: str, preview_url: bool = False) -> Dict[str, Any]:
         """Send a standard text message."""
