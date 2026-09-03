@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: izone-whatsapp-bot
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "alembic upgrade head && python -m app.seed.seed_data && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: META_VERIFY_TOKEN
+        value: izone_meta_verify_token_secure_123
+      - key: ADMIN_API_KEY
+        value: izone_admin_secret_api_key_2026
+      - key: DATABASE_URL
+        fromDatabase:
+          name: izone-bot-db
+          property: connectionString
+      - key: META_ACCESS_TOKEN
+        sync: false
+      - key: META_PHONE_NUMBER_ID
+        sync: false
+      - key: META_BUSINESS_ACCOUNT_ID
+        sync: false
+
+databases:
+  - name: izone-bot-db
+    databaseName: izone_bot
+    user: izone_user

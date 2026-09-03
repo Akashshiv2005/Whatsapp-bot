@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iZone Technologies — WhatsApp Business Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #090e11;
+            --bg-panel: #111b21;
+            --bg-header: #202c33;
+            --bg-bubble-bot: #202c33;
+            --bg-bubble-user: #005c4b;
+            --wa-green: #00a884;
+            --wa-green-bright: #25d366;
+            --wa-green-glow: rgba(0, 168, 132, 0.25);
+            --accent-blue: #53bdeb;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --text-primary: #e9edef;
+            --text-secondary: #8696a0;
+            --text-muted: #667781;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background: var(--bg-base);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+
+        /* Layout Structure */
+        .sidebar {
+            width: 320px;
+            min-width: 300px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 10;
+            transition: margin-left 0.3s ease, opacity 0.3s ease;
+        }
+        .sidebar.collapsed {
+            margin-left: -320px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .chat-area {
+            flex: 1;
+            min-width: 360px;
+            display: flex;
+            flex-direction: column;
+            background: #0b141a;
+            position: relative;
+            height: 100vh;
+        }
+
+        .inspector {
+            width: 360px;
+            min-width: 320px;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            height: 100vh;
+            z-index: 10;
+            transition: margin-right 0.3s ease, opacity 0.3s ease;
+        }
+        .inspector.collapsed {
+            margin-right: -360px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Panel Hide / Show Buttons */
+        .btn-hide-panel {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 10.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-hide-panel:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        .toggle-pill-btn {
+            background: #202c33;
+            border: 1px solid var(--border-subtle);
+            color: var(--wa-green-bright);
+            padding: 5px 11px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .toggle-pill-btn:hover {
+            background: var(--wa-green);
+            color: #111b21;
+        }
+
+        /* Header Styles */
+        .header {
+            height: 60px;
+            min-height: 60px;
+            background: var(--bg-header);
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--wa-green-bright);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--wa-green-bright);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00a884 0%, #005c4b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fff;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(0, 168, 132, 0.3);
+        }
+
+        .profile-info { margin-left: 12px; }
+        .profile-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .verified-badge {
+            background: var(--wa-green);
+            color: #111b21;
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+        .profile-status {
+            font-size: 11px;
+            color: var(--wa-green-bright);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-section {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .sidebar-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 7px 10px;
+            background: #202c33;
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            border-color: var(--wa-green);
+        }
+
+        .btn-reset {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .btn-reset:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* Scenarios Filter Pills (Fixed: No scrollbar, clean 4-button grid) */
+        .filter-pills {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+            overflow: visible;
+        }
+        .pill-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 5px 2px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .pill-btn.active, .pill-btn:hover {
+            background: var(--wa-green);
+            color: #111b21;
+            border-color: var(--wa-green);
+        }
+
+        /* Quick Test Buttons (Clean 2-column grid with smooth scroll) */
+        .scenarios-container {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 16px;
+        }
+        .quick-btn-grid {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            padding-right: 2px;
+            align-content: start;
+        }
+        .quick-btn {
+            background: #202c33;
+            border: 1px solid var(--border-subtle);
+            color: #d1d7db;
+            padding: 7px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .quick-btn:hover {
+            background: #2a3942;
+            border-color: var(--wa-green);
+            color: #fff;
+        }
+        .quick-btn span.icon { flex-shrink: 0; font-size: 12px; }
+
+        /* Chat Wallpaper & Container */
+        .chat-wallpaper {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0.04;
+            background-image: radial-gradient(#e9edef 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            pointer-events: none;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1;
+        }
+
+        .msg-row { display: flex; width: 100%; }
+        .msg-row.user { justify-content: flex-end; }
+        .msg-row.bot { justify-content: flex-start; }
+
+        .bubble {
+            max-width: 80%;
+            padding: 9px 13px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            line-height: 1.45;
+            position: relative;
+            word-wrap: break-word;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+        .bubble.user {
+            background: var(--bg-bubble-user);
+            color: var(--text-primary);
+            border-top-right-radius: 2px;
+        }
+        .bubble.bot {
+            background: var(--bg-bubble-bot);
+            color: var(--text-primary);
+            border-top-left-radius: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .msg-meta {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            font-size: 10.5px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .read-tick { color: var(--accent-blue); font-weight: bold; }
+
+        /* Interactive Elements */
+        .interactive-card { margin-top: 6px; }
+        .interactive-header {
+            font-weight: 700;
+            color: var(--wa-green-bright);
+            font-size: 13.5px;
+            margin-bottom: 5px;
+        }
+        .interactive-footer {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-style: italic;
+        }
+        
+        .btn-action-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        .interactive-action-btn {
+            background: #2a3942;
+            color: var(--wa-green-bright);
+            border: 1px solid rgba(0, 168, 132, 0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+        }
+        .interactive-action-btn:hover {
+            background: var(--wa-green);
+            color: #111b21;
+            border-color: var(--wa-green);
+        }
+
+        /* List Items */
+        .list-section-title {
+            font-size: 10.5px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            margin-bottom: 4px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border-bottom: 1px dashed rgba(255,255,255,0.08);
+            padding-bottom: 2px;
+        }
+        .list-row-btn {
+            background: #182229;
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+        .list-row-btn:hover {
+            background: #2a3942;
+            border-color: var(--wa-green);
+            transform: translateX(2px);
+        }
+        .list-row-title { font-size: 12.5px; font-weight: 600; color: var(--wa-green-bright); }
+        .list-row-desc { font-size: 11px; color: var(--text-secondary); margin-top: 1px; line-height: 1.3; }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-bubble-bot);
+            padding: 8px 12px;
+            border-radius: 8px;
+            width: fit-content;
+            border-top-left-radius: 2px;
+            margin-bottom: 4px;
+        }
+        .typing-dot {
+            width: 5px;
+            height: 5px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: bounceDot 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounceDot {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Input Bar */
+        .input-bar {
+            height: 60px;
+            min-height: 60px;
+            background: var(--bg-header);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid var(--border-subtle);
+            z-index: 10;
+        }
+        .chat-input {
+            flex: 1;
+            background: #2a3942;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 9px 14px;
+            color: var(--text-primary);
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .chat-input:focus {
+            border-color: var(--wa-green);
+        }
+        .send-btn {
+            background: var(--wa-green);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #111b21;
+            font-size: 16px;
+            transition: transform 0.15s;
+        }
+        .send-btn:hover {
+            background: var(--wa-green-bright);
+            transform: scale(1.05);
+        }
+
+        /* Inspector Panel */
+        .inspector-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .state-badge {
+            background: rgba(0, 168, 132, 0.15);
+            color: var(--wa-green-bright);
+            border: 1px solid var(--wa-green);
+            font-size: 10.5px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        .card-box {
+            background: rgba(32, 44, 51, 0.4);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 14px;
+            border: 1px solid var(--border-subtle);
+        }
+        .card-title {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .json-viewer {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10.5px;
+            color: var(--wa-green-bright);
+            background: #090e11;
+            padding: 8px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 160px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .lead-item {
+            background: #090e11;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 11.5px;
+            line-height: 1.55;
+            border: 1px solid var(--border-subtle);
+            border-left: 3px solid var(--wa-green);
+        }
+        .lead-status-pill {
+            background: rgba(0, 168, 132, 0.2);
+            color: var(--wa-green-bright);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 9.5px;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #202c33;
+            color: var(--text-primary);
+            border: 1px solid var(--wa-green);
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            gap: 6px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar / Controls -->
+    <div class="sidebar">
+        <div class="header">
+            <div class="brand-title">
+                <span class="live-dot"></span>
+                <span>WhatsApp Bot</span>
+            </div>
+            <span style="font-size: 10.5px; color: var(--wa-green-bright); font-weight: 600; background: rgba(0,168,132,0.12); padding: 2px 7px; border-radius: 10px;">Port 8001</span>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">Test User Profile</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="phoneInput" class="form-input" value="919940048776" onchange="fetchChat()">
+                </div>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="nameInput" class="form-input" value="Akash">
+                </div>
+            </div>
+            <button class="btn-reset" onclick="resetChat()">
+                <span>🔄</span> Reset Conversation State
+            </button>
+        </div>
+
+        <div class="scenarios-container">
+            <div class="sidebar-title">1-Click Test Scenarios</div>
+            
+            <div class="filter-pills">
+                <button class="pill-btn active" onclick="filterScenarios('all', this)">All</button>
+                <button class="pill-btn" onclick="filterScenarios('services', this)">🛠️ Services</button>
+                <button class="pill-btn" onclick="filterScenarios('products', this)">🚀 Products</button>
+                <button class="pill-btn" onclick="filterScenarios('nav', this)">🧭 Nav</button>
+            </div>
+
+            <div class="quick-btn-grid" id="quickBtnGrid">
+                <!-- Navigation -->
+                <button class="quick-btn" data-cat="nav" onclick="sendQuickText('Hi')"><span class="icon">👋</span> Say "Hi"</button>
+                <button class="quick-btn" data-cat="nav" onclick="sendQuickText('menu')"><span class="icon">🏠</span> Main Menu</button>
+                
+                <!-- Services -->
+                <button class="quick-btn" data-cat="services" onclick="sendQuickText('1')"><span class="icon">🌐</span> 1. Website Dev</button>
+                <button class="quick-btn" data-cat="services" onclick="sendQuickText('2')"><span class="icon">💻</span> 2. Software Dev</button>
+                <button class="quick-btn" data-cat="services" onclick="sendQuickText('3')"><span class="icon">📱</span> 3. Mobile Apps</button>
+                <button class="quick-btn" data-cat="services" onclick="sendQuickText('4')"><span class="icon">📈</span> 4. Marketing</button>
+                <button class="quick-btn" data-cat="services" onclick="sendQuickText('5')"><span class="icon">💬</span> 5. WhatsApp API</button>
+                <button class="quick-btn" data-cat="services" onclick="sendQuickText('6')"><span class="icon">🎓</span> 6. Student Projects</button>
+
+                <!-- Products -->
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('7')"><span class="icon">🏥</span> 7. Hospital (HMS)</button>
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('8')"><span class="icon">📚</span> 8. Learning (LMS)</button>
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('9')"><span class="icon">🚛</span> 9. Transport (TMS)</button>
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('10')"><span class="icon">🏭</span> 10. Manufacturing</button>
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('11')"><span class="icon">💰</span> 11. Finance (FMS)</button>
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('12')"><span class="icon">📅</span> 12. Project (PMS)</button>
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('13')"><span class="icon">⚙️</span> 13. Asset (AMS)</button>
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('14')"><span class="icon">🛍️</span> 14. Order (OMS)</button>
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('15')"><span class="icon">📦</span> 15. Warehouse</button>
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('16')"><span class="icon">🏫</span> 16. School (SMS)</button>
+                <button class="quick-btn" data-cat="products" onclick="sendQuickText('17')"><span class="icon">🏢</span> 17. Business (BMS)</button>
+
+                <!-- Support & Nav -->
+                <button class="quick-btn" data-cat="nav" onclick="sendQuickText('18')"><span class="icon">📍</span> 18. Contact Info</button>
+                <button class="quick-btn" data-cat="nav" onclick="sendQuickText('19')"><span class="icon">👤</span> 19. Support</button>
+                <button class="quick-btn" data-cat="nav" onclick="sendQuickText('cancel')"><span class="icon">❌</span> Cancel Flow</button>
+            </div>
+        </div>
+
+        <div class="sidebar-section" style="background: rgba(0,0,0,0.25); padding: 10px 16px;">
+            <div style="font-size: 10.5px; color: var(--text-secondary); line-height: 1.4;">
+                ⚡ <b>Zero Meta Credentials Needed</b> · Local PostgreSQL State
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Window -->
+    <div class="chat-area">
+        <div class="chat-wallpaper"></div>
+        <div class="header">
+            <div style="display: flex; align-items: center;">
+                <div class="avatar">iZ</div>
+                <div class="profile-info">
+                    <div class="profile-name">
+                        iZone Technologies <span class="verified-badge">✔ VERIFIED</span>
+                    </div>
+                    <div class="profile-status">● Online · Official WhatsApp Business Bot</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="messages-container" id="messagesContainer">
+            <!-- Messages rendered dynamically -->
+        </div>
+
+        <!-- Typing indicator -->
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+
+        <div class="input-bar">
+            <input type="text" id="msgInput" class="chat-input" placeholder="Type a message, keyword, or number option..." onkeydown="if(event.key==='Enter') sendMessage()">
+            <button class="send-btn" onclick="sendMessage()" title="Send Message">➤</button>
+        </div>
+    </div>
+
+    <!-- Live State & Lead Inspector -->
+    <div class="inspector">
+        <div class="inspector-header">
+            <span>State Machine Inspector</span>
+            <span class="state-badge" id="stateBadge">MAIN_MENU</span>
+        </div>
+
+        <div class="card-box">
+            <div class="card-title">
+                <span>Active Session Context</span>
+                <span style="font-size: 10px; color: var(--wa-green-bright); cursor: pointer;" onclick="copyJsonContext()">📋 Copy</span>
+            </div>
+            <div class="json-viewer" id="sessionDataViewer">{}</div>
+        </div>
+
+        <div class="card-box">
+            <div class="card-title">CRM Captured Leads</div>
+            <div id="leadsList">
+                <span style="font-size: 11.5px; color: var(--text-secondary);">No leads captured yet. Follow a service workflow to create a lead.</span>
+            </div>
+        </div>
+
+        <div class="card-box">
+            <div class="card-title">Company Info (iZone)</div>
+            <div style="font-size: 11.5px; color: var(--text-secondary); line-height: 1.55;">
+                📍 3rd Floor, Aruvi Arcade, Trichy<br>
+                📞 +91-9940048776<br>
+                ✉️ info@izonetech.in<br>
+                🌐 <a href="https://izonetech.in/" target="_blank" style="color: var(--wa-green-bright); text-decoration: none;">https://izonetech.in/</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toastNotification">
+        <span id="toastIcon">✅</span>
+        <span id="toastMsg">Action completed successfully!</span>
+    </div>
+
+    <script>
+        let currentPhone = "919940048776";
+
+        function showToast(msg, icon = "✅") {
+            const toast = document.getElementById("toastNotification");
+            document.getElementById("toastIcon").innerText = icon;
+            document.getElementById("toastMsg").innerText = msg;
+            toast.style.display = "flex";
+            setTimeout(() => { toast.style.display = "none"; }, 3500);
+        }
+
+        function formatWhatsAppText(text) {
+            if (!text) return "";
+            return text
+                .replace(/\*(.*?)\*/g, '<b>$1</b>')
+                .replace(/_(.*?)_/g, '<i>$1</i>')
+                .replace(/~(.*?)~/g, '<strike>$1</strike>')
+                .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:3px; font-family:monospace; font-size:11.5px;">$1</code>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function filterScenarios(cat, btn) {
+            document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const buttons = document.querySelectorAll('.quick-btn');
+            buttons.forEach(b => {
+                if (cat === 'all' || b.getAttribute('data-cat') === cat) {
+                    b.style.display = 'flex';
+                } else {
+                    b.style.display = 'none';
+                }
+            });
+        }
+
+        async function fetchChat() {
+            currentPhone = document.getElementById("phoneInput").value.trim() || "919940048776";
+            try {
+                const res = await fetch(`/api/simulator/chat/${currentPhone}`);
+                const data = await res.json();
+
+                // Update state badge & session viewer
+                if (data.conversation) {
+                    document.getElementById("stateBadge").innerText = data.conversation.state;
+                    document.getElementById("sessionDataViewer").innerText = JSON.stringify(data.conversation.session_data || {}, null, 2);
+                } else {
+                    document.getElementById("stateBadge").innerText = "MAIN_MENU";
+                    document.getElementById("sessionDataViewer").innerText = "{}";
+                }
+
+                // Update leads list
+                const leadsContainer = document.getElementById("leadsList");
+                if (data.leads && data.leads.length > 0) {
+                    leadsContainer.innerHTML = data.leads.map(l => `
+                        <div class="lead-item">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                <b style="color:var(--wa-green-bright);">#LEAD-${String(l.id).padStart(4, '0')}</b>
+                                <span class="lead-status-pill">${l.status}</span>
+                            </div>
+                            👤 <b>Name:</b> ${l.name || 'N/A'}<br>
+                            💼 <b>Business:</b> ${l.business_type || 'N/A'}<br>
+                            📝 <b>Requirement:</b> ${l.requirement || 'N/A'}<br>
+                            ⏳ <b>Timeline:</b> ${l.timeline || 'Standard'}<br>
+                            💰 <b>Budget:</b> ${l.budget || 'N/A'}<br>
+                            🏷️ <b>Est. Quote:</b> <span style="color:var(--wa-green-bright); font-weight:bold;">${l.estimated_amount || 'Custom'}</span><br>
+                            🕒 <b>Calling Slot:</b> ${l.preferred_contact_time || 'Business hours'}<br>
+                            ✉️ <b>Email:</b> ${l.email || 'N/A'}<br>
+                            <button class="interactive-action-btn" style="margin-top:6px; font-size:10.5px; padding:5px 8px; width:100%;" onclick="forwardLeadEmail(${l.id})">📧 Forward Form to Email</button>
+                        </div>
+                    `).join('');
+                } else {
+                    leadsContainer.innerHTML = '<span style="font-size: 11.5px; color: var(--text-secondary);">No leads captured yet.</span>';
+                }
+
+                // Render Chat Messages from database transcript
+                renderChat(data);
+            } catch (err) {
+                console.error("Error fetching chat:", err);
+            }
+        }
+
+        async function forwardLeadEmail(leadId) {
+            const email = prompt("Enter target email address to receive lead summary notification:", "info@izonetech.in");
+            if (!email || !email.trim()) return;
+            try {
+                const res = await fetch(`/api/simulator/lead/${leadId}/forward-email`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ target_email: email.trim() })
+                });
+                const data = await res.json();
+                if (data.status === "sent_success" || data.status === "sent_simulated") {
+                    showToast(`Lead #${String(leadId).padStart(4, '0')} notification sent to ${data.recipient}!`);
+                } else {
+                    showToast(`Failed: ${data.error || 'Server error'}`, '❌');
+                }
+            } catch (err) {
+                showToast(`Error: ${err.message}`, '❌');
+            }
+        }
+
+        function copyJsonContext() {
+            const text = document.getElementById("sessionDataViewer").innerText;
+            navigator.clipboard.writeText(text);
+            showToast("Session context JSON copied to clipboard!");
+        }
+
+        function renderChat(data) {
+            const container = document.getElementById("messagesContainer");
+            container.innerHTML = "";
+
+            const dbMsgs = data.db_messages || [];
+
+            if (dbMsgs.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: var(--text-secondary); margin-top: 50px; font-size: 12.5px; line-height:1.6;">
+                        <div style="font-size:32px; margin-bottom:8px;">💬</div>
+                        <b>No messages in this conversation yet.</b><br>
+                        Click <b>👋 Say "Hi"</b> on the left panel or type below to start chatting!
+                    </div>
+                `;
+                return;
+            }
+
+            dbMsgs.forEach((msg, idx) => {
+                const isUser = msg.direction === "INBOUND";
+                const row = document.createElement("div");
+                row.className = `msg-row ${isUser ? 'user' : 'bot'}`;
+                
+                const bubble = document.createElement("div");
+                bubble.className = `bubble ${isUser ? 'user' : 'bot'}`;
+                
+                let contentHtml = `<div>${formatWhatsAppText(msg.text)}</div>`;
+
+                // Render interactive payload elements for bot messages
+                if (!isUser && msg.raw_payload) {
+                    let payload = msg.raw_payload;
+                    if (payload && payload.payload) payload = payload.payload;
+                    if (payload && payload.interactive) {
+                        const inter = payload.interactive;
+                        contentHtml = `<div class="interactive-card">`;
+                        if (inter.header) contentHtml += `<div class="interactive-header">${inter.header.text}</div>`;
+                        if (inter.body) contentHtml += `<div>${formatWhatsAppText(inter.body.text)}</div>`;
+
+                        if (inter.type === "button" && inter.action && inter.action.buttons) {
+                            contentHtml += `<div class="btn-action-group">`;
+                            inter.action.buttons.forEach(btn => {
+                                contentHtml += `<button class="interactive-action-btn" onclick="sendSelection('${btn.reply.id}', '${btn.reply.title}')">${btn.reply.title}</button>`;
+                            });
+                            contentHtml += `</div>`;
+                        } else if (inter.type === "list" && inter.action && inter.action.sections) {
+                            inter.action.sections.forEach(sec => {
+                                contentHtml += `<div class="list-section-title">${sec.title}</div>`;
+                                sec.rows.forEach(r => {
+                                    contentHtml += `
+                                        <div class="list-row-btn" onclick="sendSelection('${r.id}', '${r.title}')">
+                                            <div class="list-row-title">${r.title}</div>
+                                            ${r.description ? `<div class="list-row-desc">${r.description}</div>` : ''}
+                                        </div>
+                                    `;
+                                });
+                            });
+                        }
+
+                        if (inter.footer) contentHtml += `<div class="interactive-footer">${inter.footer.text}</div>`;
+                        contentHtml += `</div>`;
+                    }
+                }
+
+                // Add time & read receipt ticks
+                const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now';
+                contentHtml += `
+                    <div class="msg-meta">
+                        <span>${timeStr}</span>
+                        ${isUser ? '<span class="read-tick">✓✓</span>' : ''}
+                    </div>
+                `;
+
+                bubble.innerHTML = contentHtml;
+                row.appendChild(bubble);
+                container.appendChild(row);
+            });
+
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 50);
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("msgInput");
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = "";
+            await sendPayload({ message_text: text, message_type: "text" });
+        }
+
+        async function sendQuickText(text) {
+            await sendPayload({ message_text: text, message_type: "text" });
+        }
+
+        async function sendSelection(selectionId, selectionTitle) {
+            await sendPayload({
+                message_text: selectionTitle,
+                message_type: "interactive_button",
+                selection_id: selectionId
+            });
+        }
+
+        async function sendPayload(data) {
+            currentPhone = document.getElementById("phoneInput").value.trim() || "919940048776";
+            const senderName = document.getElementById("nameInput").value.trim() || "Akash Kumar";
+
+            const payload = {
+                phone_number: currentPhone,
+                sender_name: senderName,
+                ...data
+            };
+
+            const typingInd = document.getElementById("typingIndicator");
+            const container = document.getElementById("messagesContainer");
+            if (typingInd) {
+                typingInd.style.display = "flex";
+                container.appendChild(typingInd);
+                container.scrollTop = container.scrollHeight;
+            }
+
+            try {
+                await fetch("/api/simulator/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (typingInd) typingInd.style.display = "none";
+                await fetchChat();
+            } catch (err) {
+                if (typingInd) typingInd.style.display = "none";
+                console.error("Error sending simulator message:", err);
+                showToast("Failed to connect to backend", "❌");
+            }
+        }
+
+        async function resetChat() {
+            currentPhone = document.getElementById("phoneInput").value.trim() || "919940048776";
+            try {
+                await fetch(`/api/simulator/reset/${currentPhone}`, { method: "POST" });
+                await fetchChat();
+                showToast("State machine & leads successfully reset!");
+            } catch (err) {
+                console.error("Error resetting chat:", err);
+                showToast("Error resetting state", "❌");
+            }
+        }
+
+        window.onload = () => {
+            fetchChat();
+        };
+    </script>
+</body>
+</html>
