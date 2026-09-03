@@ -13,8 +13,10 @@ if sys.platform == "win32":
 settings = get_settings()
 
 db_url = settings.DATABASE_URL
-# Convert standard postgresql:// to asyncpg or psycopg
-if db_url.startswith("postgresql://"):
+# Convert standard postgres:// or postgresql:// to asyncpg
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif db_url.startswith("postgresql://"):
     db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 elif db_url.startswith("postgresql+psycopg://"):
     db_url = db_url.replace("postgresql+psycopg://", "postgresql+asyncpg://", 1)
