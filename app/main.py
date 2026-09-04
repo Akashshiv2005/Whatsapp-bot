@@ -28,6 +28,22 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.connect() as conn:
             logger.info("Database connection established successfully.")
+            
+            # Reseed the menus automatically on startup to ensure production DB has the 10-row fix
+            try:
+                import sys
+                from pathlib import Path
+                # add root to sys path if not there
+                root_dir = str(Path(__file__).parent.parent)
+                if root_dir not in sys.path:
+                    sys.path.insert(0, root_dir)
+                
+                from reseed import seed_menus
+                logger.info("Running automatic menu reseeding to fix 10-row limit...")
+                await seed_menus()
+            except Exception as seed_err:
+                logger.error(f"Failed to reseed menus: {seed_err}", exc_info=True)
+
     except Exception as e:
         logger.error(f"Failed to connect to database on startup: {e}", exc_info=True)
 
