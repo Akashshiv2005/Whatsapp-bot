@@ -323,7 +323,7 @@ class MessageHandler:
             await MessageHandler.handle_main_menu_input(db, user, conv, raw_input, selection_id)
         elif state == "PRODUCT_INFO":
             await MessageHandler.handle_product_info_input(db, user, conv, raw_input, selection_id)
-        elif state.endswith("_MENU"):
+        elif state.endswith("_MENU") or state.startswith("ERP_MENU"):
             await MessageHandler.handle_submenu_input(db, user, conv, raw_input, selection_id)
         elif state == "CONTACT_MENU":
             await MessageHandler.handle_contact_menu_input(db, user, conv, raw_input, selection_id)
@@ -373,48 +373,188 @@ class MessageHandler:
         target_lower = target_val.lower()
 
         menu_mapping = {
-            "1": ("CORE_SERVICES_MENU", "menu_core_services"),
-            "core services": ("CORE_SERVICES_MENU", "menu_core_services"),
-            "core": ("CORE_SERVICES_MENU", "menu_core_services"),
-            "menu_core_services": ("CORE_SERVICES_MENU", "menu_core_services"),
+            "1": ("WEBSITE_MENU", "menu_website"),
+            "website": ("WEBSITE_MENU", "menu_website"),
+            "website dev": ("WEBSITE_MENU", "menu_website"),
+            "website development": ("WEBSITE_MENU", "menu_website"),
+            "menu_website": ("WEBSITE_MENU", "menu_website"),
 
-            "2": ("ERP_MENU_1", "menu_erp"),
+            "2": ("SOFTWARE_MENU", "menu_software"),
+            "software": ("SOFTWARE_MENU", "menu_software"),
+            "software dev": ("SOFTWARE_MENU", "menu_software"),
+            "software development": ("SOFTWARE_MENU", "menu_software"),
+            "menu_software": ("SOFTWARE_MENU", "menu_software"),
+
+            "3": ("MOBILE_MENU", "menu_mobile"),
+            "mobile": ("MOBILE_MENU", "menu_mobile"),
+            "mobile apps": ("MOBILE_MENU", "menu_mobile"),
+            "mobile app development": ("MOBILE_MENU", "menu_mobile"),
+            "app": ("MOBILE_MENU", "menu_mobile"),
+            "menu_mobile": ("MOBILE_MENU", "menu_mobile"),
+
+            "4": ("MARKETING_MENU", "menu_marketing"),
+            "seo": ("MARKETING_MENU", "menu_marketing"),
+            "marketing": ("MARKETING_MENU", "menu_marketing"),
+            "seo & digital marketing": ("MARKETING_MENU", "menu_marketing"),
+            "digital marketing": ("MARKETING_MENU", "menu_marketing"),
+            "menu_marketing": ("MARKETING_MENU", "menu_marketing"),
+
+            "5": ("COMMUNICATION_MENU", "menu_communication"),
+            "whatsapp": ("COMMUNICATION_MENU", "menu_communication"),
+            "sms": ("COMMUNICATION_MENU", "menu_communication"),
+            "voice": ("COMMUNICATION_MENU", "menu_communication"),
+            "communication": ("COMMUNICATION_MENU", "menu_communication"),
+            "whatsapp / sms / voice": ("COMMUNICATION_MENU", "menu_communication"),
+            "menu_communication": ("COMMUNICATION_MENU", "menu_communication"),
+
+            "6": ("STUDENT_MENU", "menu_student"),
+            "student": ("STUDENT_MENU", "menu_student"),
+            "student services": ("STUDENT_MENU", "menu_student"),
+            "project": ("STUDENT_MENU", "menu_student"),
+            "internship": ("STUDENT_MENU", "menu_student"),
+            "menu_student": ("STUDENT_MENU", "menu_student"),
+
+            "7": ("ERP_MENU_1", "menu_erp"),
             "erp": ("ERP_MENU_1", "menu_erp"),
             "management systems": ("ERP_MENU_1", "menu_erp"),
             "more erp systems": ("ERP_MENU_1", "menu_erp"),
             "menu_erp": ("ERP_MENU_1", "menu_erp"),
 
-            "3": ("HELP_SUPPORT_MENU", "menu_help_support"),
-            "help": ("HELP_SUPPORT_MENU", "menu_help_support"),
-            "support": ("HELP_SUPPORT_MENU", "menu_help_support"),
-            "help & support": ("HELP_SUPPORT_MENU", "menu_help_support"),
-            "menu_help_support": ("HELP_SUPPORT_MENU", "menu_help_support"),
+            "8": ("CONTACT_MENU", "menu_contact"),
+            "help": ("CONTACT_MENU", "menu_contact"),
+            "support": ("CONTACT_MENU", "menu_contact"),
+            "help & support": ("CONTACT_MENU", "menu_contact"),
+            "menu_help_support": ("CONTACT_MENU", "menu_contact"),
+            "menu_contact": ("CONTACT_MENU", "menu_contact"),
+            "contact": ("CONTACT_MENU", "menu_contact"),
         }
         
         # Keep backward compatibility for the direct keywords
         fallback_mapping = {
             "website": ("WEBSITE_MENU", "menu_website"),
+            "website dev": ("WEBSITE_MENU", "menu_website"),
+            "website development": ("WEBSITE_MENU", "menu_website"),
+            "menu_website": ("WEBSITE_MENU", "menu_website"),
+
             "software": ("SOFTWARE_MENU", "menu_software"),
+            "software dev": ("SOFTWARE_MENU", "menu_software"),
+            "software development": ("SOFTWARE_MENU", "menu_software"),
+            "menu_software": ("SOFTWARE_MENU", "menu_software"),
+
             "mobile": ("MOBILE_MENU", "menu_mobile"),
+            "mobile apps": ("MOBILE_MENU", "menu_mobile"),
+            "mobile app development": ("MOBILE_MENU", "menu_mobile"),
+            "app": ("MOBILE_MENU", "menu_mobile"),
+            "menu_mobile": ("MOBILE_MENU", "menu_mobile"),
+
             "seo": ("MARKETING_MENU", "menu_marketing"),
             "marketing": ("MARKETING_MENU", "menu_marketing"),
+            "seo & digital marketing": ("MARKETING_MENU", "menu_marketing"),
+            "digital marketing": ("MARKETING_MENU", "menu_marketing"),
+            "menu_marketing": ("MARKETING_MENU", "menu_marketing"),
+
             "whatsapp": ("COMMUNICATION_MENU", "menu_communication"),
+            "sms": ("COMMUNICATION_MENU", "menu_communication"),
+            "voice": ("COMMUNICATION_MENU", "menu_communication"),
+            "communication": ("COMMUNICATION_MENU", "menu_communication"),
+            "whatsapp / sms / voice": ("COMMUNICATION_MENU", "menu_communication"),
+            "menu_communication": ("COMMUNICATION_MENU", "menu_communication"),
+
             "student": ("STUDENT_MENU", "menu_student"),
+            "student services": ("STUDENT_MENU", "menu_student"),
+            "project": ("STUDENT_MENU", "menu_student"),
+            "internship": ("STUDENT_MENU", "menu_student"),
+            "menu_student": ("STUDENT_MENU", "menu_student"),
+
+            "7": ("COLLECT_HMS", "menu_hms"),
+            "hms": ("COLLECT_HMS", "menu_hms"),
+            "hospital": ("COLLECT_HMS", "menu_hms"),
+            "menu_hms": ("COLLECT_HMS", "menu_hms"),
+            "software_hms": ("COLLECT_HMS", "menu_hms"),
+
+            "8": ("COLLECT_LMS", "menu_lms"),
+            "lms": ("COLLECT_LMS", "menu_lms"),
+            "learning": ("COLLECT_LMS", "menu_lms"),
+            "menu_lms": ("COLLECT_LMS", "menu_lms"),
+            "software_lms": ("COLLECT_LMS", "menu_lms"),
+
+            "9": ("COLLECT_TMS", "menu_tms"),
+            "tms": ("COLLECT_TMS", "menu_tms"),
+            "transport": ("COLLECT_TMS", "menu_tms"),
+            "menu_tms": ("COLLECT_TMS", "menu_tms"),
+            "software_tms": ("COLLECT_TMS", "menu_tms"),
+
+            "10": ("COLLECT_MMS", "menu_mms"),
+            "mms": ("COLLECT_MMS", "menu_mms"),
+            "manufacturing": ("COLLECT_MMS", "menu_mms"),
+            "menu_mms": ("COLLECT_MMS", "menu_mms"),
+            "software_mms": ("COLLECT_MMS", "menu_mms"),
+
+            "11": ("COLLECT_FMS", "menu_fms"),
+            "fms": ("COLLECT_FMS", "menu_fms"),
+            "finance": ("COLLECT_FMS", "menu_fms"),
+            "financial": ("COLLECT_FMS", "menu_fms"),
+            "menu_fms": ("COLLECT_FMS", "menu_fms"),
+            "software_fms": ("COLLECT_FMS", "menu_fms"),
+
+            "12": ("COLLECT_PMS", "menu_pms"),
+            "pms": ("COLLECT_PMS", "menu_pms"),
+            "menu_pms": ("COLLECT_PMS", "menu_pms"),
+            "software_pms": ("COLLECT_PMS", "menu_pms"),
+
+            "13": ("COLLECT_AMS", "menu_ams"),
+            "ams": ("COLLECT_AMS", "menu_ams"),
+            "asset": ("COLLECT_AMS", "menu_ams"),
+            "menu_ams": ("COLLECT_AMS", "menu_ams"),
+            "software_ams": ("COLLECT_AMS", "menu_ams"),
+
+            "14": ("COLLECT_OMS", "menu_oms"),
+            "oms": ("COLLECT_OMS", "menu_oms"),
+            "order": ("COLLECT_OMS", "menu_oms"),
+            "menu_oms": ("COLLECT_OMS", "menu_oms"),
+            "software_oms": ("COLLECT_OMS", "menu_oms"),
+
+            "15": ("COLLECT_WMS", "menu_wms"),
+            "wms": ("COLLECT_WMS", "menu_wms"),
+            "warehouse": ("COLLECT_WMS", "menu_wms"),
+            "menu_wms": ("COLLECT_WMS", "menu_wms"),
+            "software_wms": ("COLLECT_WMS", "menu_wms"),
+
+            "16": ("COLLECT_SMS", "menu_sms"),
+            "sms": ("COLLECT_SMS", "menu_sms"),
+            "school": ("COLLECT_SMS", "menu_sms"),
+            "menu_sms": ("COLLECT_SMS", "menu_sms"),
+            "software_sms": ("COLLECT_SMS", "menu_sms"),
+
+            "17": ("COLLECT_BMS", "menu_bms"),
+            "bms": ("COLLECT_BMS", "menu_bms"),
+            "business": ("COLLECT_BMS", "menu_bms"),
+            "menu_bms": ("COLLECT_BMS", "menu_bms"),
+            "software_bms": ("COLLECT_BMS", "menu_bms"),
+
             "contact": ("CONTACT_MENU", "menu_contact"),
+            "menu_contact": ("CONTACT_MENU", "menu_contact"),
         }
 
         matched_state = None
-        for key, (n_state, _) in menu_mapping.items():
-            if target_lower == key:
-                matched_state = n_state
-                break
-            elif key.isdigit():
-                if target_lower.startswith(key + ".") or target_lower.startswith(key + " "):
+        if target_lower == "7":
+            res_opt = await db.execute(select(MenuOption).where(MenuOption.parent_state == "MAIN_MENU", MenuOption.sort_order == 7))
+            opt_7 = res_opt.scalar_one_or_none()
+            if opt_7 and "hms" in (opt_7.value or ""):
+                matched_state = "COLLECT_HMS"
+
+        if not matched_state:
+            for key, (n_state, _) in menu_mapping.items():
+                if target_lower == key:
                     matched_state = n_state
                     break
-            elif target_lower.startswith(key):
-                matched_state = n_state
-                break
+                elif key.isdigit():
+                    if target_lower.startswith(key + ".") or target_lower.startswith(key + " "):
+                        matched_state = n_state
+                        break
+                elif target_lower.startswith(key):
+                    matched_state = n_state
+                    break
         
         if not matched_state:
             for key, (n_state, _) in fallback_mapping.items():
@@ -734,7 +874,7 @@ class MessageHandler:
         input_lower = input_clean.lower()
         sel = selection_id or input_clean
 
-        if input_lower in ["back", "b"]:
+        if input_lower in ["back", "b", "nav_main_menu", "menu", "main menu"]:
             await MessageHandler.transition_to_main_menu(db, user, conv)
             return
 
@@ -758,6 +898,18 @@ class MessageHandler:
                     break
 
         if selected_option:
+            if selected_option.next_state in ["ERP_MENU_1", "ERP_MENU_2"]:
+                conv.previous_state = conv.state
+                conv.state = selected_option.next_state
+                await db.commit()
+                page_num = "1" if selected_option.next_state == "ERP_MENU_1" else "2"
+                await MessageHandler.send_and_log_submenu(
+                    db=db, conv=conv, to=phone, parent_state=selected_option.next_state,
+                    title="Management Systems",
+                    description=f"Select an ERP system (Page {page_num}):"
+                )
+                return
+
             service_name = selected_option.service.name if selected_option.service else selected_option.label
             service_id = selected_option.service_id
 

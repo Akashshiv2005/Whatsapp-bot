@@ -167,11 +167,16 @@ class WorkflowEngine:
 
         sections = [
             {
-                "title": "iZone Technologies",
+                "title": "Our Services & Systems",
                 "rows": [
-                    {"id": "menu_core_services", "title": "Core Services", "description": "Web, App, Software & Marketing"},
-                    {"id": "menu_erp", "title": "Management Systems", "description": "Explore all our ERP systems"},
-                    {"id": "menu_help_support", "title": "Help & Support", "description": "Contact info & Human support"},
+                    {"id": "menu_website", "title": "Website Development", "description": "Custom, E-Commerce, CMS"},
+                    {"id": "menu_software", "title": "Software Development", "description": "CRM, Billing, Custom Software"},
+                    {"id": "menu_mobile", "title": "Mobile App Development", "description": "Android, iOS, Flutter"},
+                    {"id": "menu_marketing", "title": "SEO & Digital Marketing", "description": "Google Ads, Meta Ads, SEO"},
+                    {"id": "menu_communication", "title": "WhatsApp & SMS APIs", "description": "Official Meta APIs, Bulk SMS"},
+                    {"id": "menu_student", "title": "Student Services", "description": "Final Year Projects, Training"},
+                    {"id": "menu_erp", "title": "Management Systems", "description": "HMS, LMS, TMS, MMS, FMS & more"},
+                    {"id": "menu_contact", "title": "Help & Support", "description": "Contact info, Office location, Support"},
                 ]
             }
         ]
