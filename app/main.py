@@ -101,7 +101,7 @@ async def health_check():
         "status": "healthy",
         "service": settings.APP_NAME,
         "environment": settings.APP_ENV,
-        "version": "1.0.1-submodules"
+        "version": "1.0.2-erptour"
     }
 
 

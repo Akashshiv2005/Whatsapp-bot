@@ -764,6 +764,11 @@ class MessageHandler:
             if code in service_name_lower:
                 product_code = code
                 break
+        if not product_code:
+            for code, keyword in [("hms", "hospital"), ("lms", "learning"), ("tms", "transport"), ("mms", "manufacturing"), ("fms", "financial"), ("pms", "project"), ("ams", "asset"), ("oms", "order"), ("wms", "warehouse"), ("sms", "school"), ("bms", "business")]:
+                if keyword in service_name_lower:
+                    product_code = code
+                    break
 
         # Strip next_ prefix if present from Next Module CTA clicks
         if sel.startswith("next_"):
@@ -923,14 +928,15 @@ class MessageHandler:
 
             # If ERP product, show the sub-modules overview tour first
             s_lower = service_name.lower()
+            val_lower = (selected_option.value or "").lower()
             product_code = None
             for code in ["hms", "lms", "tms", "mms", "fms", "pms", "ams", "oms", "wms", "sms", "bms"]:
-                if code in s_lower:
+                if code in s_lower or f"_{code}" in val_lower or val_lower == code:
                     product_code = code
                     break
             if not product_code:
                 for code, keyword in [("hms", "hospital"), ("lms", "learning"), ("tms", "transport"), ("mms", "manufacturing"), ("fms", "financial"), ("pms", "project"), ("ams", "asset"), ("oms", "order"), ("wms", "warehouse"), ("sms", "school"), ("bms", "business")]:
-                    if keyword in s_lower:
+                    if keyword in s_lower or keyword in val_lower:
                         product_code = code
                         break
 
@@ -938,9 +944,9 @@ class MessageHandler:
                 conv.state = "PRODUCT_INFO"
                 await db.commit()
                 
-                method = getattr(workflow_engine, f"send_{product_code}_info", None)
+                method = getattr(workflow_engine, f"send_{product_code}_tour_menu", None)
                 if not method:
-                    method = getattr(workflow_engine, f"send_{product_code}_tour_menu", None)
+                    method = getattr(workflow_engine, f"send_{product_code}_info", None)
                 if method:
                     res = await method(to=phone)
                 else:
