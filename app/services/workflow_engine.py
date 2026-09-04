@@ -31,6 +31,81 @@ PREFERRED_TIME_OPTIONS = [
     {"id": "slot_chat_only", "title": "WhatsApp Chat Only", "description": "Text messaging only"},
 ]
 
+OPTION_METADATA: Dict[str, tuple] = {
+    # 1. ERP Systems (Page 1)
+    "software_hms": ("Hospital Management HMS", "OPD, IPD, Pharmacy, Lab & Billing"),
+    "software_lms": ("Learning Management LMS", "Courses, Live Classes & Student Portal"),
+    "software_tms": ("Transport Management TMS", "Fleet, Dispatch, GPS & Fuel Tracking"),
+    "software_mms": ("Manufacturing MMS", "BOM, MRP, Work Orders & Quality Control"),
+    "software_fms": ("Financial Management FMS", "Ledger, Invoicing, GST & Financial Reports"),
+    "software_pms": ("Project Management PMS", "Gantt, Kanban Tasks & Timesheets"),
+    "software_ams": ("Asset Management AMS", "Asset Registry, Tracking, Custody & Audit"),
+    "software_oms": ("Order Management OMS", "Order Capture, Inventory & Shipping"),
+    "nav_erp_page_2": ("Next Page ➡️", "View WMS, SMS, BMS & More Systems"),
+
+    # 2. ERP Systems (Page 2)
+    "software_wms": ("Warehouse Management WMS", "Receiving, Bins, Picking & Stock"),
+    "software_sms": ("School Management SMS", "Admissions, Attendance, Fees & Exams"),
+    "software_bms": ("Business Management BMS", "All-in-One Enterprise ERP & Analytics"),
+    "nav_erp_page_1": ("⬅️ Previous Page", "Return to Page 1 Management Systems"),
+
+    # 3. Software Development
+    "software_billing": ("Billing Software", "GST Invoicing, POS & Inventory"),
+    "software_crm": ("CRM Software", "Leads, Sales Pipeline & Support Tickets"),
+    "software_erp": ("ERP Software", "Integrated Operations, Finance & HR"),
+    "software_payroll": ("Payroll Software", "Salary Slips, Attendance & PF/ESI"),
+    "software_custom": ("Custom Software", "Tailor-made Business Automation"),
+    "software_student": ("Student Projects", "Academic Projects, Code & Guidance"),
+    "software_chitfund": ("Chit Fund Management", "Subscribers, Auctions, Dividends & Ledger"),
+
+    # 4. Website Development
+    "website_business": ("Business Website", "Fast, Responsive Corporate Presence"),
+    "website_ecommerce": ("E-Commerce Website", "Online Store, Catalog & Payment Gateways"),
+    "website_cms": ("CMS Website", "WordPress & Easy Content Management"),
+    "website_custom": ("Custom Web App", "Full-Stack Web Application Solutions"),
+    "website_redesign": ("Website Redesign", "Modern UI/UX Revamp & Speed Boost"),
+
+    # 5. Mobile App Development
+    "mobile_android": ("Android App", "Native Java/Kotlin High-Performance Apps"),
+    "mobile_ios": ("iOS App", "Native Swift iPhone & iPad Applications"),
+    "mobile_ecommerce": ("E-Commerce App", "Shopping, Cart & Razorpay/Stripe Checkout"),
+    "mobile_crm": ("CRM App", "Sales Force Mobility & Instant Alerts"),
+    "mobile_flutter": ("Flutter App", "Cross-Platform Android & iOS Solution"),
+    "mobile_custom": ("Custom Mobile App", "Tailored Mobile Architecture & Features"),
+
+    # 6. SEO & Digital Marketing
+    "marketing_technical_seo": ("Technical SEO", "Speed, Core Web Vitals & Indexing"),
+    "marketing_google_ads": ("Google Ads (PPC)", "High-ROI Search & Display Ads"),
+    "marketing_social_media": ("Social Media Marketing", "Instagram, LinkedIn & Facebook Growth"),
+    "marketing_lead_gen": ("Lead Generation", "Qualified Inquiries & Conversion Funnels"),
+    "marketing_seo_audit": ("SEO Audit", "Complete 100-Point Website Health Check"),
+    "marketing_seo": ("Google SEO", "Keyword Ranking & Organic Traffic"),
+    "marketing_local_seo": ("Local SEO & Maps", "Google Maps & Local Search Ranking"),
+    "marketing_meta_ads": ("Meta Ads", "Facebook & Instagram Targeted Funnels"),
+
+    # 7. WhatsApp & SMS APIs
+    "comm_whatsapp_api": ("WhatsApp Cloud API", "Official Meta Cloud API & Green Badge"),
+    "comm_whatsapp_marketing": ("WhatsApp Marketing", "Bulk Broadcasts & Promotional Campaigns"),
+    "comm_sms": ("Bulk SMS & SMS API", "Transactional DLT SMS & Promotions"),
+    "comm_voice": ("Bulk Voice & Voice API", "Automated Voice Broadcasts & IVR"),
+    "comm_whatsapp_bot": ("WhatsApp Chatbot", "Interactive AI & Workflow Automation Bot"),
+
+    # 8. Student Services
+    "student_project": ("Final Year Project", "IEEE Source Code, Documentation & Viva"),
+    "student_guidance": ("Project Guidance", "1-on-1 Mentorship & Architecture Review"),
+    "student_training": ("Technical Training", "Python, Full-Stack, AI & Cloud Bootcamps"),
+    "student_internship": ("Internship Program", "Hands-on Industry Project Experience"),
+    "student_career": ("Career Guidance", "Resume Building & Mock Technical Interviews"),
+
+    # 9. Core Services Menu
+    "menu_website": ("Website Development", "Custom, E-Commerce, CMS & Redesign"),
+    "menu_software": ("Software Development", "CRM, Billing, ERP & Custom Software"),
+    "menu_mobile": ("Mobile App Development", "Android, iOS & Flutter Applications"),
+    "menu_marketing": ("SEO & Digital Marketing", "Google Ads, Meta Ads & Search Ranking"),
+    "menu_communication": ("WhatsApp & SMS APIs", "Official Meta Cloud APIs & Bulk Messaging"),
+    "menu_student": ("Student Services", "Final Year Projects, Internships & Training"),
+}
+
 
 def calculate_dummy_estimate(service_name: str, budget: Optional[str] = None, timeline: Optional[str] = None) -> Dict[str, Any]:
     """Generates a realistic dummy quotation estimate and feature breakdown."""
@@ -198,30 +273,53 @@ class WorkflowEngine:
         title: str,
         description: str
     ) -> Dict[str, Any]:
-        """Send dynamic database-driven submenu."""
+        """Send dynamic database-driven submenu with clean structured formatting."""
         options = await WorkflowEngine.get_menu_options(db, parent_state)
 
+        num_emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
         rows = []
         body_lines = [
             f"*{title}* 🚀",
             "━━━━━━━━━━━━━━━━━━━━",
             f"{description}\n"
         ]
-        for idx, opt in enumerate(options, start=1):
-            desc = opt.service.description if opt.service and opt.service.description else f"Select {opt.label}"
+
+        idx_count = 0
+        for opt in options:
+            meta = OPTION_METADATA.get(opt.value)
+            if meta:
+                display_label, desc = meta
+            else:
+                display_label = opt.label
+                desc = opt.service.description if (opt.service and opt.service.description) else f"Explore {opt.label}"
+
+            display_label = display_label[:24]
+            desc = desc[:72]
+
             rows.append({
                 "id": opt.value,
-                "title": opt.label,
+                "title": display_label,
                 "description": desc
             })
-            body_lines.append(f"• *{opt.label}* - _{desc}_")
 
-        rows.append({"id": "nav_main_menu", "title": "Main Menu", "description": "Return to main menu"})
-        body_lines.append("\n• *Main Menu* (Type *menu* or *back*)")
-        body_lines.append("\n👉 _Select an option below:_" )
+            clean_title = display_label.replace("⬅️", "").replace("➡️", "").strip()
+            if "previous" in opt.value.lower() or "prev" in opt.value.lower() or "previous" in display_label.lower() or "prev" in display_label.lower():
+                body_lines.append(f"⬅️ *{clean_title}* — _{desc}_")
+            elif "next" in opt.value.lower() or "page" in opt.value.lower():
+                body_lines.append(f"➡️ *{clean_title}* — _{desc}_")
+            else:
+                icon = num_emojis[idx_count] if idx_count < len(num_emojis) else "•"
+                body_lines.append(f"{icon} *{display_label}*\n   _{desc}_\n")
+                idx_count += 1
+
+        if len(rows) < 10:
+            rows.append({"id": "nav_main_menu", "title": "Main Menu 🏠", "description": "Return to main menu"})
+
+        body_lines.append("🏠 *Main Menu* (Type *menu* or *back*)")
+        body_lines.append("\n👉 _Tap *Select Option* below to explore:_")
 
         body = "\n".join(body_lines)
-        sections = [{"title": title, "rows": rows}]
+        sections = [{"title": title[:24], "rows": rows}]
 
         return await whatsapp_service.send_interactive_list(
             to=to,
