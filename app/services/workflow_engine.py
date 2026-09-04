@@ -167,28 +167,11 @@ class WorkflowEngine:
 
         sections = [
             {
-                "title": "iZone Core Services",
+                "title": "iZone Technologies",
                 "rows": [
-                    {"id": "menu_website", "title": "Web Development", "description": "Custom websites & e-commerce"},
-                    {"id": "menu_software", "title": "Software Dev", "description": "CRM, ERP & custom software"},
-                    {"id": "menu_mobile", "title": "Mobile Apps", "description": "Android, iOS, Flutter apps"},
-                    {"id": "menu_marketing", "title": "SEO & Marketing", "description": "Digital marketing & lead gen"},
-                ]
-            },
-            {
-                "title": "Management Systems",
-                "rows": [
-                    {"id": "menu_hms", "title": "Hospital System HMS", "description": "OPD, IPD & pharmacy"},
-                    {"id": "menu_lms", "title": "Learning System LMS", "description": "Online courses & live classes"},
-                    {"id": "menu_erp", "title": "More ERP Systems", "description": "View all 10+ management systems"},
-                ]
-            },
-            {
-                "title": "Support & Other",
-                "rows": [
-                    {"id": "menu_student", "title": "Student Services", "description": "Final year projects & internships"},
-                    {"id": "menu_contact", "title": "Contact Details", "description": "Office address & email"},
-                    {"id": "menu_support", "title": "Talk to Support", "description": "Connect with human support"},
+                    {"id": "menu_core_services", "title": "Core Services", "description": "Web, App, Software & Marketing"},
+                    {"id": "menu_erp", "title": "Management Systems", "description": "Explore all our ERP systems"},
+                    {"id": "menu_help_support", "title": "Help & Support", "description": "Contact info & Human support"},
                 ]
             }
         ]

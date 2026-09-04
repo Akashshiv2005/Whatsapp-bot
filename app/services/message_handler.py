@@ -373,119 +373,34 @@ class MessageHandler:
         target_lower = target_val.lower()
 
         menu_mapping = {
-            "1": ("WEBSITE_MENU", "menu_website"),
+            "1": ("CORE_SERVICES_MENU", "menu_core_services"),
+            "core services": ("CORE_SERVICES_MENU", "menu_core_services"),
+            "core": ("CORE_SERVICES_MENU", "menu_core_services"),
+            "menu_core_services": ("CORE_SERVICES_MENU", "menu_core_services"),
+
+            "2": ("ERP_MENU_1", "menu_erp"),
+            "erp": ("ERP_MENU_1", "menu_erp"),
+            "management systems": ("ERP_MENU_1", "menu_erp"),
+            "more erp systems": ("ERP_MENU_1", "menu_erp"),
+            "menu_erp": ("ERP_MENU_1", "menu_erp"),
+
+            "3": ("HELP_SUPPORT_MENU", "menu_help_support"),
+            "help": ("HELP_SUPPORT_MENU", "menu_help_support"),
+            "support": ("HELP_SUPPORT_MENU", "menu_help_support"),
+            "help & support": ("HELP_SUPPORT_MENU", "menu_help_support"),
+            "menu_help_support": ("HELP_SUPPORT_MENU", "menu_help_support"),
+        }
+        
+        # Keep backward compatibility for the direct keywords
+        fallback_mapping = {
             "website": ("WEBSITE_MENU", "menu_website"),
-            "website dev": ("WEBSITE_MENU", "menu_website"),
-            "website development": ("WEBSITE_MENU", "menu_website"),
-            "menu_website": ("WEBSITE_MENU", "menu_website"),
-
-            "2": ("SOFTWARE_MENU", "menu_software"),
             "software": ("SOFTWARE_MENU", "menu_software"),
-            "software dev": ("SOFTWARE_MENU", "menu_software"),
-            "software development": ("SOFTWARE_MENU", "menu_software"),
-            "menu_software": ("SOFTWARE_MENU", "menu_software"),
-
-            "3": ("MOBILE_MENU", "menu_mobile"),
             "mobile": ("MOBILE_MENU", "menu_mobile"),
-            "mobile apps": ("MOBILE_MENU", "menu_mobile"),
-            "mobile app development": ("MOBILE_MENU", "menu_mobile"),
-            "app": ("MOBILE_MENU", "menu_mobile"),
-            "menu_mobile": ("MOBILE_MENU", "menu_mobile"),
-
-            "4": ("MARKETING_MENU", "menu_marketing"),
             "seo": ("MARKETING_MENU", "menu_marketing"),
             "marketing": ("MARKETING_MENU", "menu_marketing"),
-            "seo & digital marketing": ("MARKETING_MENU", "menu_marketing"),
-            "digital marketing": ("MARKETING_MENU", "menu_marketing"),
-            "menu_marketing": ("MARKETING_MENU", "menu_marketing"),
-
-            "5": ("COMMUNICATION_MENU", "menu_communication"),
             "whatsapp": ("COMMUNICATION_MENU", "menu_communication"),
-            "sms": ("COMMUNICATION_MENU", "menu_communication"),
-            "voice": ("COMMUNICATION_MENU", "menu_communication"),
-            "communication": ("COMMUNICATION_MENU", "menu_communication"),
-            "whatsapp / sms / voice": ("COMMUNICATION_MENU", "menu_communication"),
-            "menu_communication": ("COMMUNICATION_MENU", "menu_communication"),
-
-            "6": ("STUDENT_MENU", "menu_student"),
             "student": ("STUDENT_MENU", "menu_student"),
-            "student services": ("STUDENT_MENU", "menu_student"),
-            "project": ("STUDENT_MENU", "menu_student"),
-            "internship": ("STUDENT_MENU", "menu_student"),
-            "menu_student": ("STUDENT_MENU", "menu_student"),
-
-            "7": ("COLLECT_HMS", "menu_hms"),
-            "hms": ("COLLECT_HMS", "menu_hms"),
-            "hospital": ("COLLECT_HMS", "menu_hms"),
-            "menu_hms": ("COLLECT_HMS", "menu_hms"),
-
-            "8": ("COLLECT_LMS", "menu_lms"),
-            "lms": ("COLLECT_LMS", "menu_lms"),
-            "learning": ("COLLECT_LMS", "menu_lms"),
-            "menu_lms": ("COLLECT_LMS", "menu_lms"),
-
-            "9": ("COLLECT_TMS", "menu_tms"),
-            "tms": ("COLLECT_TMS", "menu_tms"),
-            "transport": ("COLLECT_TMS", "menu_tms"),
-            "menu_tms": ("COLLECT_TMS", "menu_tms"),
-
-            "10": ("COLLECT_MMS", "menu_mms"),
-            "mms": ("COLLECT_MMS", "menu_mms"),
-            "manufacturing": ("COLLECT_MMS", "menu_mms"),
-            "menu_mms": ("COLLECT_MMS", "menu_mms"),
-
-            "11": ("COLLECT_FMS", "menu_fms"),
-            "fms": ("COLLECT_FMS", "menu_fms"),
-            "finance": ("COLLECT_FMS", "menu_fms"),
-            "financial": ("COLLECT_FMS", "menu_fms"),
-            "menu_fms": ("COLLECT_FMS", "menu_fms"),
-
-            "12": ("COLLECT_PMS", "menu_pms"),
-            "pms": ("COLLECT_PMS", "menu_pms"),
-            "project": ("COLLECT_PMS", "menu_pms"),
-            "menu_pms": ("COLLECT_PMS", "menu_pms"),
-
-            "13": ("COLLECT_AMS", "menu_ams"),
-            "ams": ("COLLECT_AMS", "menu_ams"),
-            "asset": ("COLLECT_AMS", "menu_ams"),
-            "menu_ams": ("COLLECT_AMS", "menu_ams"),
-
-            "14": ("COLLECT_OMS", "menu_oms"),
-            "oms": ("COLLECT_OMS", "menu_oms"),
-            "order": ("COLLECT_OMS", "menu_oms"),
-            "menu_oms": ("COLLECT_OMS", "menu_oms"),
-
-            "15": ("COLLECT_WMS", "menu_wms"),
-            "wms": ("COLLECT_WMS", "menu_wms"),
-            "warehouse": ("COLLECT_WMS", "menu_wms"),
-            "menu_wms": ("COLLECT_WMS", "menu_wms"),
-
-            "16": ("COLLECT_SMS", "menu_sms"),
-            "sms": ("COLLECT_SMS", "menu_sms"),
-            "school": ("COLLECT_SMS", "menu_sms"),
-            "menu_sms": ("COLLECT_SMS", "menu_sms"),
-
-            "17": ("COLLECT_BMS", "menu_bms"),
-            "bms": ("COLLECT_BMS", "menu_bms"),
-            "business": ("COLLECT_BMS", "menu_bms"),
-            "menu_bms": ("COLLECT_BMS", "menu_bms"),
-
-            "18": ("CONTACT_MENU", "menu_contact"),
             "contact": ("CONTACT_MENU", "menu_contact"),
-            "contact izone": ("CONTACT_MENU", "menu_contact"),
-            "location": ("CONTACT_MENU", "menu_contact"),
-            "address": ("CONTACT_MENU", "menu_contact"),
-            "menu_contact": ("CONTACT_MENU", "menu_contact"),
-
-            "19": ("HUMAN_HANDOFF", "menu_support"),
-            "support": ("HUMAN_HANDOFF", "menu_support"),
-            "talk to support": ("HUMAN_HANDOFF", "menu_support"),
-            "menu_support": ("HUMAN_HANDOFF", "menu_support"),
-
-            "20": ("ERP_MENU", "menu_erp"),
-            "erp": ("ERP_MENU", "menu_erp"),
-            "more erp systems": ("ERP_MENU", "menu_erp"),
-            "menu_erp": ("ERP_MENU", "menu_erp"),
         }
 
         matched_state = None
@@ -500,13 +415,37 @@ class MessageHandler:
             elif target_lower.startswith(key):
                 matched_state = n_state
                 break
+        
+        if not matched_state:
+            for key, (n_state, _) in fallback_mapping.items():
+                if target_lower == key or target_lower.startswith(key):
+                    matched_state = n_state
+                    break
 
         if matched_state:
             conv.previous_state = "MAIN_MENU"
             conv.state = matched_state
             await db.commit()
 
-            if matched_state == "WEBSITE_MENU":
+            if matched_state == "CORE_SERVICES_MENU":
+                await MessageHandler.send_and_log_submenu(
+                    db=db, conv=conv, to=phone, parent_state="CORE_SERVICES_MENU",
+                    title="iZone Core Services",
+                    description="Select a core service category:"
+                )
+            elif matched_state == "ERP_MENU_1":
+                await MessageHandler.send_and_log_submenu(
+                    db=db, conv=conv, to=phone, parent_state="ERP_MENU_1",
+                    title="Management Systems",
+                    description="Select an ERP system (Page 1):"
+                )
+            elif matched_state == "HELP_SUPPORT_MENU":
+                await MessageHandler.send_and_log_submenu(
+                    db=db, conv=conv, to=phone, parent_state="HELP_SUPPORT_MENU",
+                    title="Help & Support",
+                    description="How can we help you?"
+                )
+            elif matched_state == "WEBSITE_MENU":
                 await MessageHandler.send_and_log_submenu(
                     db=db, conv=conv, to=phone, parent_state="WEBSITE_MENU",
                     title="Website Development",
@@ -541,12 +480,6 @@ class MessageHandler:
                     db=db, conv=conv, to=phone, parent_state="STUDENT_MENU",
                     title="Student Services & Projects",
                     description="Select student training or project assistance:"
-                )
-            elif matched_state == "ERP_MENU":
-                await MessageHandler.send_and_log_submenu(
-                    db=db, conv=conv, to=phone, parent_state="ERP_MENU",
-                    title="Management Systems (ERP)",
-                    description="Select a management system to explore:"
                 )
             elif matched_state == "CONTACT_MENU":
                 res = await workflow_engine.send_contact_info(to=phone)
