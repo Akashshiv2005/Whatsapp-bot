@@ -75,13 +75,17 @@ class MessageHandler:
         if isinstance(raw_payload, dict) and "payload" in raw_payload and isinstance(raw_payload["payload"], dict):
             cleaned_payload = raw_payload["payload"]
 
+        actual_status = status
+        if isinstance(raw_payload, dict) and raw_payload.get("error"):
+            actual_status = "FAILED"
+
         msg = Message(
             conversation_id=conversation_id,
             whatsapp_message_id=whatsapp_message_id,
             direction=direction,
             message_type=message_type,
             message_text=text,
-            status=status,
+            status=actual_status,
             raw_payload=cleaned_payload
         )
         db.add(msg)
