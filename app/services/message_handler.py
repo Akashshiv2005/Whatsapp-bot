@@ -921,22 +921,34 @@ class MessageHandler:
             conv.session_data = session_data
             conv.previous_state = conv.state
 
-            # If HMS or LMS, show the feature overview first
+            # If ERP product, show the sub-modules overview tour first
             s_lower = service_name.lower()
-            if "hms" in s_lower or "hospital" in s_lower or "lms" in s_lower or "learning" in s_lower or "tms" in s_lower or "transport" in s_lower:
+            product_code = None
+            for code in ["hms", "lms", "tms", "mms", "fms", "pms", "ams", "oms", "wms", "sms", "bms"]:
+                if code in s_lower:
+                    product_code = code
+                    break
+            if not product_code:
+                for code, keyword in [("hms", "hospital"), ("lms", "learning"), ("tms", "transport"), ("mms", "manufacturing"), ("fms", "financial"), ("pms", "project"), ("ams", "asset"), ("oms", "order"), ("wms", "warehouse"), ("sms", "school"), ("bms", "business")]:
+                    if keyword in s_lower:
+                        product_code = code
+                        break
+
+            if product_code:
                 conv.state = "PRODUCT_INFO"
                 await db.commit()
                 
-                if "hms" in s_lower or "hospital" in s_lower:
-                    res = await workflow_engine.send_hms_info(to=phone)
-                elif "lms" in s_lower or "learning" in s_lower:
-                    res = await workflow_engine.send_lms_info(to=phone)
+                method = getattr(workflow_engine, f"send_{product_code}_info", None)
+                if not method:
+                    method = getattr(workflow_engine, f"send_{product_code}_tour_menu", None)
+                if method:
+                    res = await method(to=phone)
                 else:
-                    res = await workflow_engine.send_tms_info(to=phone)
+                    res = await workflow_engine.send_hms_tour_menu(to=phone)
                     
                 await MessageHandler.log_message(
                     db=db, conversation_id=conv.id, direction="OUTBOUND",
-                    message_type="interactive_button",
+                    message_type="interactive_list",
                     text=f"Product Overview for {service_name}",
                     raw_payload=res
                 )
