@@ -18,8 +18,11 @@ class Settings(BaseSettings):
     META_VERIFY_TOKEN: str = "izone_meta_verify_token_secure_123"
     META_API_VERSION: str = "v19.0"
 
-    # Database
-    DATABASE_URL: str = "postgresql+psycopg://postgres:1234@localhost:5432/Bot"
+    # Database (strictly loaded from .env in production)
+    DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/izone_bot"
+
+    # CORS Settings
+    CORS_ORIGINS: str = "*"
 
     # Security
     ADMIN_API_KEY: str = "izone_admin_secret_api_key_2026"

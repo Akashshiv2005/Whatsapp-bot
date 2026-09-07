@@ -9,15 +9,38 @@ settings = get_settings()
 
 class WhatsAppService:
     def __init__(self, access_token: Optional[str] = None, phone_number_id: Optional[str] = None):
-        self.access_token = access_token or settings.META_ACCESS_TOKEN
-        self.phone_number_id = phone_number_id or settings.META_PHONE_NUMBER_ID
-        self.base_url = f"https://graph.facebook.com/{settings.META_API_VERSION}/{self.phone_number_id}/messages"
-        self.headers = {
+        self._access_token = access_token
+        self._phone_number_id = phone_number_id
+        # In-memory testing outbox for simulator and verification
+        self.outbox_history: List[Dict[str, Any]] = []
+
+    @property
+    def access_token(self) -> str:
+        return self._access_token or get_settings().META_ACCESS_TOKEN
+
+    @access_token.setter
+    def access_token(self, val: str) -> None:
+        self._access_token = val
+
+    @property
+    def phone_number_id(self) -> str:
+        return self._phone_number_id or get_settings().META_PHONE_NUMBER_ID
+
+    @phone_number_id.setter
+    def phone_number_id(self, val: str) -> None:
+        self._phone_number_id = val
+
+    @property
+    def base_url(self) -> str:
+        s = get_settings()
+        return f"https://graph.facebook.com/{s.META_API_VERSION}/{self.phone_number_id}/messages"
+
+    @property
+    def headers(self) -> Dict[str, str]:
+        return {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
         }
-        # In-memory testing outbox for simulator and verification
-        self.outbox_history: List[Dict[str, Any]] = []
 
     def get_outbox(self, to_phone: Optional[str] = None) -> List[Dict[str, Any]]:
         """Retrieve recent dispatched messages for a recipient or all recipients."""

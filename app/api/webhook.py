@@ -31,7 +31,7 @@ async def verify_webhook(
     expected = (settings.META_VERIFY_TOKEN or "").strip("\"' ")
     incoming = (token or "").strip("\"' ")
 
-    if mode == "subscribe" and (incoming == expected or incoming == "izone_meta_verify_token_secure_123"):
+    if mode == "subscribe" and incoming == expected:
         logger.info("Webhook verification succeeded! Returning challenge.")
         return Response(content=challenge or "", media_type="text/plain", status_code=200)
 

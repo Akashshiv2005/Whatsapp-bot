@@ -175,7 +175,7 @@ class EmailService:
             lsrc = source
             lcreated = created_at
 
-        recipient = target_email or settings.NOTIFICATION_EMAIL or settings.COMPANY_EMAIL or "akashsivalingam5@gmail.com"
+        recipient = target_email or settings.NOTIFICATION_EMAIL or settings.COMPANY_EMAIL or "info@izonetech.in"
         subject = f"NEW LEAD [#LEAD-{lid:04d}]: {lname} ({lbusiness or 'Inquiry'})"
 
         html_body = EmailService.format_lead_email_html(

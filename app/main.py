@@ -64,14 +64,26 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS Middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS Middleware (Configurable via .env CORS_ORIGINS, W3C compliant)
+cors_origins_raw = getattr(settings, "CORS_ORIGINS", "*")
+cors_origins = [orig.strip() for orig in cors_origins_raw.split(",") if orig.strip()]
+
+if "*" in cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"^https?:\/\/.*",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 # Global Exception Handler

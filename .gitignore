@@ -32,5 +32,9 @@ htmlcov/
 .agents/
 scratch/
 
-# Logs
+# Logs & Scratch / Temp scripts
 *.log
+output.txt
+scratch*.py
+sync_render_db.py
+test_webhook.py

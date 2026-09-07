@@ -20,9 +20,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    op.add_column('leads', sa.Column('timeline', sa.String(length=100), nullable=True))
-    op.add_column('leads', sa.Column('preferred_contact_time', sa.String(length=100), nullable=True))
-    op.add_column('leads', sa.Column('estimated_amount', sa.String(length=100), nullable=True))
+    op.execute("ALTER TABLE leads ADD COLUMN IF NOT EXISTS timeline VARCHAR(100);")
+    op.execute("ALTER TABLE leads ADD COLUMN IF NOT EXISTS preferred_contact_time VARCHAR(100);")
+    op.execute("ALTER TABLE leads ADD COLUMN IF NOT EXISTS estimated_amount VARCHAR(100);")
 
 
 def downgrade() -> None:
