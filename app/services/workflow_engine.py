@@ -31,6 +31,84 @@ PREFERRED_TIME_OPTIONS = [
     {"id": "slot_chat_only", "title": "WhatsApp Chat Only", "description": "Text messaging only"},
 ]
 
+REQUIREMENT_OPTIONS_MAP: Dict[str, List[Dict[str, str]]] = {
+    "hms": [
+        {"id": "req_hms_opd", "title": "OPD & Patient Billing", "description": "Tokens, prescriptions & billing"},
+        {"id": "req_hms_ipd", "title": "IPD & Bed Management", "description": "Wards, admission & discharge"},
+        {"id": "req_hms_lab", "title": "Pharmacy & Lab System", "description": "Test tracking & stock billing"},
+        {"id": "req_hms_erp", "title": "Full Hospital ERP", "description": "OPD, IPD, lab, pharmacy & accounts"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ],
+    "lms": [
+        {"id": "req_lms_courses", "title": "Online Course & Video", "description": "Recorded/live classes & portal"},
+        {"id": "req_lms_exam", "title": "Online Exams & Quizzes", "description": "Automated grading & certs"},
+        {"id": "req_sms_fees", "title": "Fees & Attendance", "description": "Fee receipts & SMS notifications"},
+        {"id": "req_lms_full", "title": "Complete School ERP", "description": "Admissions, LMS & administration"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ],
+    "tms": [
+        {"id": "req_tms_gps", "title": "Live GPS Fleet Tracking", "description": "Vehicle location & route history"},
+        {"id": "req_tms_dispatch", "title": "Trip Dispatch & LR", "description": "Driver booking & trip billing"},
+        {"id": "req_tms_fuel", "title": "Fuel & Maintenance", "description": "Fuel logs, tires & service alerts"},
+        {"id": "req_tms_full", "title": "Complete Logistics TMS", "description": "Fleet, dispatch, fuel & billing"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ],
+    "mms": [
+        {"id": "req_mms_bom", "title": "BOM & Work Orders", "description": "Bill of Materials & job cards"},
+        {"id": "req_wms_stock", "title": "Warehouse & Barcode", "description": "Bin location & stock audit"},
+        {"id": "req_mms_full", "title": "Complete Factory ERP", "description": "Procurement, production & QA"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ],
+    "fms": [
+        {"id": "req_fms_gst", "title": "GST Invoicing & POS", "description": "Quick barcode billing & GST"},
+        {"id": "req_fms_ledger", "title": "Ledger & Cash Flow", "description": "Payables, receivables & bank"},
+        {"id": "req_fms_full", "title": "Complete Financial ERP", "description": "Multi-branch, P&L & audit"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ],
+    "website": [
+        {"id": "req_web_corp", "title": "Corporate Website", "description": "Modern responsive company showcase"},
+        {"id": "req_web_ecom", "title": "E-Commerce Online Store", "description": "Catalog, shopping cart & payment"},
+        {"id": "req_web_portal", "title": "Custom Web Portal", "description": "Client login & interactive features"},
+        {"id": "req_web_landing", "title": "Landing Page / Leads", "description": "High-converting inquiry page"},
+        {"id": "req_web_redesign", "title": "Website Redesign", "description": "Fresh UI/UX & speed optimization"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ],
+    "mobile": [
+        {"id": "req_app_ecom", "title": "Shopping Mobile App", "description": "Cart, payment & order tracking"},
+        {"id": "req_app_booking", "title": "Service Booking App", "description": "Live GPS, slots & notifications"},
+        {"id": "req_app_flutter", "title": "Flutter Android & iOS", "description": "Dual platform single app"},
+        {"id": "req_app_custom", "title": "Custom Mobile App", "description": "Tailored mobile features & API"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ],
+    "software": [
+        {"id": "req_soft_billing", "title": "Billing & POS Software", "description": "GST billing, barcode & inventory"},
+        {"id": "req_soft_crm", "title": "CRM & Lead Pipeline", "description": "Customer follow-ups & pipeline"},
+        {"id": "req_soft_payroll", "title": "HR & Payroll Software", "description": "Staff attendance, salary & PF"},
+        {"id": "req_soft_custom", "title": "Custom Business Software", "description": "Tailored automation workflow"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ],
+    "marketing": [
+        {"id": "req_mkt_seo", "title": "Google #1 SEO Ranking", "description": "Keywords, backlinks & traffic"},
+        {"id": "req_mkt_google_ads", "title": "Google Ads (PPC)", "description": "High-intent search lead campaigns"},
+        {"id": "req_mkt_meta_ads", "title": "Meta Ads (Insta & FB)", "description": "Social media ads & lead forms"},
+        {"id": "req_mkt_social", "title": "Social Media Growth", "description": "Creative posts, reels & branding"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ],
+    "communication": [
+        {"id": "req_comm_bot", "title": "Automated WhatsApp Bot", "description": "24/7 auto-reply & lead capture"},
+        {"id": "req_comm_api", "title": "Official Meta Cloud API", "description": "Green badge, multi-agent chat"},
+        {"id": "req_comm_sms", "title": "Bulk SMS & OTP API", "description": "DLT transactional SMS & OTP"},
+        {"id": "req_comm_voice", "title": "Bulk Voice Broadcasting", "description": "Automated voice calls & IVR"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ],
+    "default": [
+        {"id": "req_def_custom", "title": "Custom Development", "description": "Tailored software solution"},
+        {"id": "req_def_integrate", "title": "API & Payment Gateway", "description": "Integration with existing tools"},
+        {"id": "req_def_support", "title": "Support & Maintenance", "description": "Bug fixes, upgrades & speed"},
+        {"id": "req_other", "title": "Other / Custom", "description": "Type your custom specific requirement"},
+    ]
+}
+
 OPTION_METADATA: Dict[str, tuple] = {
     # 1. ERP Systems (Page 1)
     "software_hms": ("Hospital Management HMS", "OPD, IPD, Pharmacy, Lab & Billing"),
@@ -55,7 +133,6 @@ OPTION_METADATA: Dict[str, tuple] = {
     "software_erp": ("ERP Software", "Integrated Operations, Finance & HR"),
     "software_payroll": ("Payroll Software", "Salary Slips, Attendance & PF/ESI"),
     "software_custom": ("Custom Software", "Tailor-made Business Automation"),
-    "software_student": ("Student Projects", "Academic Projects, Code & Guidance"),
     "software_chitfund": ("Chit Fund Management", "Subscribers, Auctions, Dividends & Ledger"),
 
     # 4. Website Development
@@ -90,20 +167,12 @@ OPTION_METADATA: Dict[str, tuple] = {
     "comm_voice": ("Bulk Voice & Voice API", "Automated Voice Broadcasts & IVR"),
     "comm_whatsapp_bot": ("WhatsApp Chatbot", "Interactive AI & Workflow Automation Bot"),
 
-    # 8. Student Services
-    "student_project": ("Final Year Project", "IEEE Source Code, Documentation & Viva"),
-    "student_guidance": ("Project Guidance", "1-on-1 Mentorship & Architecture Review"),
-    "student_training": ("Technical Training", "Python, Full-Stack, AI & Cloud Bootcamps"),
-    "student_internship": ("Internship Program", "Hands-on Industry Project Experience"),
-    "student_career": ("Career Guidance", "Resume Building & Mock Technical Interviews"),
-
-    # 9. Core Services Menu
+    # 8. Core Services Menu
     "menu_website": ("Website Development", "Custom, E-Commerce, CMS & Redesign"),
     "menu_software": ("Software Development", "CRM, Billing, ERP & Custom Software"),
     "menu_mobile": ("Mobile App Development", "Android, iOS & Flutter Applications"),
     "menu_marketing": ("SEO & Digital Marketing", "Google Ads, Meta Ads & Search Ranking"),
     "menu_communication": ("WhatsApp & SMS APIs", "Official Meta Cloud APIs & Bulk Messaging"),
-    "menu_student": ("Student Services", "Final Year Projects, Internships & Training"),
 }
 
 
@@ -147,10 +216,6 @@ def calculate_dummy_estimate(service_name: str, budget: Optional[str] = None, ti
         base_range = "₹8,500 – ₹18,000"
         features = "Official Meta Cloud API Setup, Verified Green Badge Guidance, Interactive Buttons/Lists, Multi-Agent Chat Panel"
         delivery = "3–5 Days"
-    elif "student" in s_lower or "project" in s_lower or "internship" in s_lower:
-        base_range = "₹7,500 – ₹14,000"
-        features = "IEEE Base Paper, Complete Python/Java Source Code, PPT & Report Documentation, 1-on-1 Viva Preparation"
-        delivery = "3–7 Days"
     else:
         base_range = "₹22,000 – ₹42,000"
         features = "Custom Tailored Architecture, Dedicated Project Manager, Cloud Deployment, 3 Months Free Maintenance Support"
@@ -214,14 +279,13 @@ class WorkflowEngine:
         greeting = f"Hello {user_name}! 👋" if user_name else "Welcome to *iZone Technologies*! 👋"
         body_text = (
             f"{greeting}\n\n"
-            "We provide end-to-end software, web, mobile, digital marketing, and student solutions.\n\n"
+            "We provide end-to-end software, web, mobile, and digital marketing solutions.\n\n"
             "🛠️ *Our Core Services:*\n"
             "• *Website Development* (Custom, E-Commerce, CMS)\n"
             "• *Software Development* (CRM, ERP, Billing, Custom)\n"
             "• *Mobile App Development* (Android, iOS, Flutter)\n"
             "• *SEO & Digital Marketing* (Google Ads, Meta Ads)\n"
-            "• *WhatsApp & SMS APIs* (Official Meta APIs)\n"
-            "• *Student Services & Projects* (Final Year Projects, Training)\n\n"
+            "• *WhatsApp & SMS APIs* (Official Meta APIs)\n\n"
             "🚀 *Our Management Systems:*\n"
             "• *Hospital Management (HMS)*\n"
             "• *Learning Management (LMS)*\n"
@@ -249,7 +313,6 @@ class WorkflowEngine:
                     {"id": "menu_mobile", "title": "Mobile App Development", "description": "Android, iOS, Flutter"},
                     {"id": "menu_marketing", "title": "SEO & Digital Marketing", "description": "Google Ads, Meta Ads, SEO"},
                     {"id": "menu_communication", "title": "WhatsApp & SMS APIs", "description": "Official Meta APIs, Bulk SMS"},
-                    {"id": "menu_student", "title": "Student Services", "description": "Final Year Projects, Training"},
                     {"id": "menu_erp", "title": "Management Systems", "description": "HMS, LMS, TMS, MMS, FMS & more"},
                     {"id": "menu_contact", "title": "Help & Support", "description": "Contact info, Office location, Support"},
                 ]
@@ -366,6 +429,71 @@ class WorkflowEngine:
             longitude=settings.COMPANY_LOCATION_LONGITUDE,
             name=settings.COMPANY_NAME,
             address=settings.COMPANY_ADDRESS,
+        )
+
+    @staticmethod
+    def get_requirement_options(service_name: Optional[str] = None, parent_menu: Optional[str] = None) -> List[Dict[str, str]]:
+        """Resolve relevant requirement options based on selected service or section."""
+        s_lower = (service_name or "").lower()
+        p_lower = (parent_menu or "").lower()
+        combined = f"{s_lower} {p_lower}"
+
+        if any(k in combined for k in ["hms", "hospital", "clinic", "health"]):
+            key = "hms"
+        elif any(k in combined for k in ["lms", "learning", "school", "sms", "education"]):
+            key = "lms"
+        elif any(k in combined for k in ["tms", "transport", "fleet", "logistics"]):
+            key = "tms"
+        elif any(k in combined for k in ["mms", "manufacturing", "wms", "warehouse", "factory"]):
+            key = "mms"
+        elif any(k in combined for k in ["fms", "finance", "financial", "accounting"]):
+            key = "fms"
+        elif any(k in combined for k in ["website", "web"]):
+            key = "website"
+        elif any(k in combined for k in ["mobile", "android", "ios", "flutter", "app"]):
+            key = "mobile"
+        elif any(k in combined for k in ["marketing", "seo", "google ads", "meta ads"]):
+            key = "marketing"
+        elif any(k in combined for k in ["communication", "whatsapp", "sms", "voice", "bulk"]):
+            key = "communication"
+        elif any(k in combined for k in ["software", "billing", "crm", "erp", "payroll", "chitfund"]):
+            key = "software"
+        else:
+            key = "default"
+
+        return REQUIREMENT_OPTIONS_MAP.get(key, REQUIREMENT_OPTIONS_MAP["default"])
+
+    @staticmethod
+    async def send_requirement_selection(
+        to: str,
+        service_name: Optional[str] = None,
+        parent_menu: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Send service-based requirement selector (Step 3 of 8)."""
+        rows = WorkflowEngine.get_requirement_options(service_name, parent_menu)
+        display_service = service_name or "Your Project"
+
+        body = (
+            f"📋 *Step 3 of 8: Specific Requirements*\n\n"
+            f"What key features or requirements do you need for *{display_service}*?\n\n"
+            f"👉 _Select an option from the list below, or choose *Other* to describe your custom needs:_"
+        )
+
+        sec_title = f"{display_service[:14]} Features" if len(display_service) <= 14 else "Requirement Options"
+
+        sections = [
+            {
+                "title": sec_title,
+                "rows": rows
+            }
+        ]
+
+        return await whatsapp_service.send_interactive_list(
+            to=to,
+            body_text=body,
+            button_label="Choose Requirement",
+            sections=sections,
+            footer="Select an option above",
         )
 
     @staticmethod

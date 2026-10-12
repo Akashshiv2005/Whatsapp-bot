@@ -9,13 +9,12 @@ async def seed_menus():
         await db.execute(delete(MenuOption))
         
         menus = [
-            # 1. CORE_SERVICES_MENU (6 items)
+            # 1. CORE_SERVICES_MENU (5 items)
             MenuOption(parent_state="CORE_SERVICES_MENU", value="menu_website", label="Web Development", sort_order=1, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="CORE_SERVICES_MENU", value="menu_software", label="Software Development", sort_order=2, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="CORE_SERVICES_MENU", value="menu_mobile", label="Mobile App Development", sort_order=3, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="CORE_SERVICES_MENU", value="menu_marketing", label="SEO & Digital Marketing", sort_order=4, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="CORE_SERVICES_MENU", value="menu_communication", label="WhatsApp & SMS APIs", sort_order=5, active=True, next_state="COLLECT_NAME"),
-            MenuOption(parent_state="CORE_SERVICES_MENU", value="menu_student", label="Student Services", sort_order=6, active=True, next_state="COLLECT_NAME"),
 
             # 2. ERP_MENU_1 (Page 1) (9 items)
             MenuOption(parent_state="ERP_MENU_1", value="software_hms", label="Hospital Management HMS", sort_order=1, active=True, next_state="COLLECT_NAME"),
@@ -34,14 +33,13 @@ async def seed_menus():
             MenuOption(parent_state="ERP_MENU_2", value="software_bms", label="Business Management BMS", sort_order=3, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="ERP_MENU_2", value="nav_erp_page_1", label="⬅️ Previous Page", sort_order=4, active=True, next_state="ERP_MENU_1"),
 
-            # 4. SOFTWARE_MENU (7 items)
+            # 4. SOFTWARE_MENU (6 items)
             MenuOption(parent_state="SOFTWARE_MENU", value="software_billing", label="Billing Software", sort_order=1, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="SOFTWARE_MENU", value="software_crm", label="CRM Software", sort_order=2, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="SOFTWARE_MENU", value="software_erp", label="ERP Software", sort_order=3, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="SOFTWARE_MENU", value="software_payroll", label="Payroll Software", sort_order=4, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="SOFTWARE_MENU", value="software_custom", label="Custom Software", sort_order=5, active=True, next_state="COLLECT_NAME"),
-            MenuOption(parent_state="SOFTWARE_MENU", value="software_student", label="Student Projects", sort_order=6, active=True, next_state="COLLECT_NAME"),
-            MenuOption(parent_state="SOFTWARE_MENU", value="software_chitfund", label="Chit Fund Management", sort_order=7, active=True, next_state="COLLECT_NAME"),
+            MenuOption(parent_state="SOFTWARE_MENU", value="software_chitfund", label="Chit Fund Management", sort_order=6, active=True, next_state="COLLECT_NAME"),
 
             # 5. WEBSITE_MENU (5 items)
             MenuOption(parent_state="WEBSITE_MENU", value="website_business", label="Business Website", sort_order=1, active=True, next_state="COLLECT_NAME"),
@@ -74,13 +72,6 @@ async def seed_menus():
             MenuOption(parent_state="COMMUNICATION_MENU", value="comm_sms", label="Bulk SMS & SMS API", sort_order=3, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="COMMUNICATION_MENU", value="comm_voice", label="Bulk Voice & Voice API", sort_order=4, active=True, next_state="COLLECT_NAME"),
             MenuOption(parent_state="COMMUNICATION_MENU", value="comm_whatsapp_bot", label="WhatsApp Chatbot", sort_order=5, active=True, next_state="COLLECT_NAME"),
-
-            # 9. STUDENT_MENU (5 items)
-            MenuOption(parent_state="STUDENT_MENU", value="student_project", label="Final Year Project", sort_order=1, active=True, next_state="COLLECT_NAME"),
-            MenuOption(parent_state="STUDENT_MENU", value="student_guidance", label="Project Guidance", sort_order=2, active=True, next_state="COLLECT_NAME"),
-            MenuOption(parent_state="STUDENT_MENU", value="student_training", label="Technical Training", sort_order=3, active=True, next_state="COLLECT_NAME"),
-            MenuOption(parent_state="STUDENT_MENU", value="student_internship", label="Internship Program", sort_order=4, active=True, next_state="COLLECT_NAME"),
-            MenuOption(parent_state="STUDENT_MENU", value="student_career", label="Career Guidance", sort_order=5, active=True, next_state="COLLECT_NAME"),
         ]
         
         db.add_all(menus)

@@ -160,6 +160,35 @@ class MessageHandler:
         return res
 
     @staticmethod
+    async def send_and_log_requirement_selection(
+        db: AsyncSession,
+        conv: Conversation,
+        to: str,
+        session_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Helper to send service-based requirement options and record in DB."""
+        service_name = session_data.get("service_name")
+        parent_menu = session_data.get("parent_menu")
+        res = await workflow_engine.send_requirement_selection(
+            to=to,
+            service_name=service_name,
+            parent_menu=parent_menu
+        )
+        payload = res.get("payload") or {}
+        body_text = payload.get("interactive", {}).get("body", {}).get(
+            "text", f"Step 3 of 8: Requirements for {service_name or 'Service'}"
+        )
+        await MessageHandler.log_message(
+            db=db,
+            conversation_id=conv.id,
+            direction="OUTBOUND",
+            message_type="interactive_list",
+            text=body_text,
+            raw_payload=payload or res
+        )
+        return res
+
+    @staticmethod
     async def send_and_log_timeline(
         db: AsyncSession,
         conv: Conversation,
@@ -300,9 +329,9 @@ class MessageHandler:
                 for k in [
                     "1", "2", "3", "4", "5", "6", "7", "8",
                     "website", "software", "mobile", "marketing", "seo",
-                    "communication", "whatsapp", "student", "contact", "location", "address",
+                    "communication", "whatsapp", "contact", "location", "address",
                     "menu_website", "menu_software", "menu_mobile", "menu_marketing",
-                    "menu_communication", "menu_student", "menu_contact", "menu_support", "nav_main_menu"
+                    "menu_communication", "menu_contact", "menu_support", "nav_main_menu"
                 ]
             )
             if is_menu_choice:
@@ -411,19 +440,13 @@ class MessageHandler:
             "whatsapp / sms / voice": ("COMMUNICATION_MENU", "menu_communication"),
             "menu_communication": ("COMMUNICATION_MENU", "menu_communication"),
 
-            "6": ("STUDENT_MENU", "menu_student"),
-            "student": ("STUDENT_MENU", "menu_student"),
-            "student services": ("STUDENT_MENU", "menu_student"),
-            "project": ("STUDENT_MENU", "menu_student"),
-            "internship": ("STUDENT_MENU", "menu_student"),
-            "menu_student": ("STUDENT_MENU", "menu_student"),
-
-            "7": ("ERP_MENU_1", "menu_erp"),
+            "6": ("ERP_MENU_1", "menu_erp"),
             "erp": ("ERP_MENU_1", "menu_erp"),
             "management systems": ("ERP_MENU_1", "menu_erp"),
             "more erp systems": ("ERP_MENU_1", "menu_erp"),
             "menu_erp": ("ERP_MENU_1", "menu_erp"),
 
+            "7": ("CONTACT_MENU", "menu_contact"),
             "8": ("CONTACT_MENU", "menu_contact"),
             "help": ("CONTACT_MENU", "menu_contact"),
             "support": ("CONTACT_MENU", "menu_contact"),
@@ -463,12 +486,6 @@ class MessageHandler:
             "communication": ("COMMUNICATION_MENU", "menu_communication"),
             "whatsapp / sms / voice": ("COMMUNICATION_MENU", "menu_communication"),
             "menu_communication": ("COMMUNICATION_MENU", "menu_communication"),
-
-            "student": ("STUDENT_MENU", "menu_student"),
-            "student services": ("STUDENT_MENU", "menu_student"),
-            "project": ("STUDENT_MENU", "menu_student"),
-            "internship": ("STUDENT_MENU", "menu_student"),
-            "menu_student": ("STUDENT_MENU", "menu_student"),
 
             "7": ("COLLECT_HMS", "menu_hms"),
             "hms": ("COLLECT_HMS", "menu_hms"),
@@ -619,16 +636,10 @@ class MessageHandler:
                     title="WhatsApp / SMS / Voice Services",
                     description="Select messaging or voice API solution:"
                 )
-            elif matched_state == "STUDENT_MENU":
-                await MessageHandler.send_and_log_submenu(
-                    db=db, conv=conv, to=phone, parent_state="STUDENT_MENU",
-                    title="Student Services & Projects",
-                    description="Select student training or project assistance:"
-                )
             elif matched_state == "CONTACT_MENU":
                 res = await workflow_engine.send_contact_info(to=phone)
                 await MessageHandler.log_message(
-                    db=db, conv_id=conv.id, direction="OUTBOUND",
+                    db=db, conversation_id=conv.id, direction="OUTBOUND",
                     message_type="interactive_button",
                     text=f"Company Details for {settings.COMPANY_NAME}",
                     raw_payload=res
@@ -1027,7 +1038,7 @@ class MessageHandler:
         if sel in ["btn_send_location", "map", "location", "pin", "1", "send map pin"]:
             res = await workflow_engine.send_location_pin(to=phone)
             await MessageHandler.log_message(
-                db=db, conv_id=conv.id, direction="OUTBOUND",
+                db=db, conversation_id=conv.id, direction="OUTBOUND",
                 message_type="location",
                 text=f"Location Pin: {settings.COMPANY_NAME}",
                 raw_payload=res
@@ -1046,7 +1057,7 @@ class MessageHandler:
         else:
             res = await workflow_engine.send_contact_info(to=phone)
             await MessageHandler.log_message(
-                db=db, conv_id=conv.id, direction="OUTBOUND",
+                db=db, conversation_id=conv.id, direction="OUTBOUND",
                 message_type="interactive_button",
                 text=f"Contact Info for {settings.COMPANY_NAME}",
                 raw_payload=res
@@ -1088,10 +1099,10 @@ class MessageHandler:
                 await db.commit()
                 await MessageHandler.send_and_log_text(db=db, conv=conv, to=phone, text="*Step 2 of 8:* What type of business is this for?")
                 return
-            elif state == "COLLECT_TIMELINE":
+            elif state in ["COLLECT_TIMELINE", "COLLECT_CUSTOM_REQUIREMENT"]:
                 conv.state = "COLLECT_REQUIREMENT"
                 await db.commit()
-                await MessageHandler.send_and_log_text(db=db, conv=conv, to=phone, text="*Step 3 of 8:* Please describe your specific requirements.")
+                await MessageHandler.send_and_log_requirement_selection(db=db, conv=conv, to=phone, session_data=session_data)
                 return
             elif state == "COLLECT_BUDGET":
                 conv.state = "COLLECT_TIMELINE"
@@ -1124,8 +1135,24 @@ class MessageHandler:
         # ----------------------------------------------------
         if state == "COLLECT_NAME":
             if not input_clean:
-                await MessageHandler.send_and_log_text(db=db, conv=conv, to=phone, text="Please enter your name:")
+                await MessageHandler.send_and_log_text(db=db, conv=conv, to=phone, text="⚠️ Please enter your name:")
                 return
+
+            if any(char.isdigit() for char in input_clean):
+                await MessageHandler.send_and_log_text(
+                    db=db, conv=conv, to=phone,
+                    text="⚠️ Name must not contain any numbers. Please enter your valid full name (letters only):"
+                )
+                return
+
+            clean_name = re.sub(r"[\s\.\'\-]", "", input_clean)
+            if not clean_name.isalpha() or len(clean_name) < 2:
+                await MessageHandler.send_and_log_text(
+                    db=db, conv=conv, to=phone,
+                    text="⚠️ Please enter a valid name using letters only (minimum 2 letters):"
+                )
+                return
+
             session_data["name"] = input_clean
             conv.session_data = session_data
             conv.previous_state = "COLLECT_NAME"
@@ -1155,25 +1182,92 @@ class MessageHandler:
             conv.state = "COLLECT_REQUIREMENT"
             await db.commit()
 
-            await MessageHandler.send_and_log_text(
-                db=db, conv=conv, to=phone,
-                text=(
-                    "*Step 3 of 8:* Please describe your specific requirements or features needed.\n"
-                    "_(e.g. Online payment, customer login, Android & iOS app, SEO ranking, final year project guidance)_"
-                )
+            await MessageHandler.send_and_log_requirement_selection(
+                db=db, conv=conv, to=phone, session_data=session_data
             )
             return
 
         # ----------------------------------------------------
-        # Step 3: COLLECT_REQUIREMENT
+        # Step 3: COLLECT_REQUIREMENT (Service-based options + Other)
         # ----------------------------------------------------
         elif state == "COLLECT_REQUIREMENT":
-            if not input_clean:
-                await MessageHandler.send_and_log_text(db=db, conv=conv, to=phone, text="Please describe your requirements:")
+            sel = (selection_id or input_clean).strip()
+            sel_lower = sel.lower()
+
+            req_options = workflow_engine.get_requirement_options(
+                service_name=session_data.get("service_name"),
+                parent_menu=session_data.get("parent_menu")
+            )
+
+            # Check if user chose "Other" / "Custom"
+            is_other = (
+                sel_lower in ["req_other", "other", "custom", "other / custom", "other requirement", "others"]
+                or sel_lower.startswith("other")
+            )
+            if input_clean.isdigit():
+                idx = int(input_clean)
+                if 1 <= idx <= len(req_options):
+                    matched_opt = req_options[idx - 1]
+                    if matched_opt["id"] == "req_other":
+                        is_other = True
+                    else:
+                        sel = matched_opt["title"]
+                        sel_lower = sel.lower()
+
+            if is_other:
+                conv.previous_state = "COLLECT_REQUIREMENT"
+                conv.state = "COLLECT_CUSTOM_REQUIREMENT"
+                await db.commit()
+
+                await MessageHandler.send_and_log_text(
+                    db=db, conv=conv, to=phone,
+                    text=(
+                        "✍️ *Custom Requirement:*\n\n"
+                        "Please describe your specific requirements or features needed:\n"
+                        "_(e.g. Needs multi-vendor marketplace, doctor video consultation, custom CRM pipeline, etc.)_"
+                    )
+                )
                 return
-            session_data["requirement"] = input_clean
+
+            chosen_requirement = None
+            for opt in req_options:
+                if sel == opt["id"] or sel_lower == opt["title"].lower():
+                    chosen_requirement = opt["title"]
+                    break
+
+            if not chosen_requirement and not input_clean.isdigit():
+                for opt in req_options:
+                    if opt["title"].lower() in sel_lower or sel_lower in opt["title"].lower():
+                        chosen_requirement = opt["title"]
+                        break
+
+            # If user entered custom text directly
+            if not chosen_requirement:
+                chosen_requirement = input_clean
+
+            session_data["requirement"] = chosen_requirement
             conv.session_data = session_data
             conv.previous_state = "COLLECT_REQUIREMENT"
+            conv.state = "COLLECT_TIMELINE"
+            await db.commit()
+
+            await MessageHandler.send_and_log_timeline(db=db, conv=conv, to=phone)
+            return
+
+        # ----------------------------------------------------
+        # Step 3b: COLLECT_CUSTOM_REQUIREMENT (When "Other" was clicked)
+        # ----------------------------------------------------
+        elif state == "COLLECT_CUSTOM_REQUIREMENT":
+            if not input_clean:
+                await MessageHandler.send_and_log_text(
+                    db=db, conv=conv, to=phone,
+                    text="Please enter your specific requirement details:"
+                )
+                return
+
+            session_data["requirement"] = input_clean
+            conv.session_data = session_data
+            conv.previous_state = "COLLECT_CUSTOM_REQUIREMENT"
             conv.state = "COLLECT_TIMELINE"
             await db.commit()
 
@@ -1331,10 +1425,32 @@ class MessageHandler:
         # ----------------------------------------------------
         elif state == "COLLECT_CONTACT":
             final_phone = phone
-            if input_lower not in ["ok", "yes", "confirm", "y", "same"]:
+            if input_lower in ["ok", "yes", "confirm", "y", "same"]:
+                final_phone = phone
+            else:
+                # Reject if user types any word / letters
+                if re.search(r"[a-zA-Z]", input_clean):
+                    await MessageHandler.send_and_log_text(
+                        db=db, conv=conv, to=phone,
+                        text=(
+                            f"⚠️ Mobile number must not contain any words or letters.\n"
+                            f"Please enter digits only (e.g. 9876543210), or type *OK* to use *{phone}*:"
+                        )
+                    )
+                    return
+
                 clean_phone = re.sub(r"[^\d+]", "", input_clean)
-                if len(clean_phone) >= 10:
-                    final_phone = clean_phone
+                clean_digits = re.sub(r"\D", "", input_clean)
+                if len(clean_digits) < 10 or len(clean_digits) > 15:
+                    await MessageHandler.send_and_log_text(
+                        db=db, conv=conv, to=phone,
+                        text=(
+                            f"⚠️ Please enter a valid 10-digit mobile number (digits only), or type *OK* to use *{phone}*:"
+                        )
+                    )
+                    return
+
+                final_phone = clean_phone
 
             session_data["phone"] = final_phone
 

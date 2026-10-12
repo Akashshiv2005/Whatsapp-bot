@@ -150,3 +150,156 @@ async def test_full_lead_collection_journey(client: AsyncClient, db_session, moc
     assert "₹28,500" in lead.estimated_amount or "₹" in lead.estimated_amount
     assert lead.status == "NEW"
     assert lead.service_id == service.id
+
+
+@pytest.mark.asyncio
+async def test_name_and_phone_validation(client: AsyncClient, db_session, mock_whatsapp):
+    phone = "919940049999"
+
+    # Seed Service and MenuOption
+    service = Service(
+        name="Billing Software",
+        slug="software-billing",
+        description="POS and invoice system",
+        category="Software Development",
+        sort_order=1,
+        active=True
+    )
+    db_session.add(service)
+    await db_session.commit()
+    await db_session.refresh(service)
+
+    menu_opt = MenuOption(
+        parent_state="SOFTWARE_MENU",
+        label="Billing Software",
+        value="software_billing",
+        next_state="COLLECT_NAME",
+        service_id=service.id,
+        sort_order=1,
+        active=True
+    )
+    db_session.add(menu_opt)
+    await db_session.commit()
+
+    # Step 0: User starts -> MAIN_MENU -> SOFTWARE_MENU
+    await client.post("/webhook", json=make_webhook_msg(phone, "Hi", "v1"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "2", "v2"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "Billing Software", "v3", "interactive", "software_billing"))
+
+    res = await db_session.execute(select(Conversation).join(User).where(User.phone_number == phone))
+    conv = res.scalar_one()
+    assert conv.state == "COLLECT_NAME"
+
+    # 1. Invalid Name: containing numbers
+    await client.post("/webhook", json=make_webhook_msg(phone, "Akash123", "v4"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_NAME"
+    assert any("Name must not contain any numbers" in str(msg) for msg in mock_whatsapp)
+
+    # 2. Invalid Name: only numbers
+    await client.post("/webhook", json=make_webhook_msg(phone, "98765", "v5"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_NAME"
+
+    # 3. Valid Name: letters only -> advances to COLLECT_BUSINESS_TYPE
+    await client.post("/webhook", json=make_webhook_msg(phone, "Akash Kumar", "v6"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_BUSINESS_TYPE"
+    assert conv.session_data["name"] == "Akash Kumar"
+
+    # Advance steps to reach COLLECT_CONTACT
+    await client.post("/webhook", json=make_webhook_msg(phone, "Supermarket", "v7"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "POS with barcode", "v8"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "Urgent (< 2 Weeks)", "v9", "interactive", "time_urgent"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "Below ₹25,000", "v10", "interactive", "budget_1"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "skip", "v11"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "Morning (10AM–1PM)", "v12", "interactive", "slot_morning"))
+
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_CONTACT"
+
+    # 4. Invalid Phone: contains words/letters
+    await client.post("/webhook", json=make_webhook_msg(phone, "call my phone please", "v13"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_CONTACT"
+    assert any("Mobile number must not contain any words or letters" in str(msg) for msg in mock_whatsapp)
+
+    # 5. Invalid Phone: word mixed with digits
+    await client.post("/webhook", json=make_webhook_msg(phone, "mob 9876543210", "v14"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_CONTACT"
+
+    # 6. Valid Phone: digits only
+    await client.post("/webhook", json=make_webhook_msg(phone, "9876543210", "v15"))
+    await db_session.refresh(conv)
+    assert conv.state == "LEAD_CONFIRMATION"
+    assert conv.session_data["phone"] == "9876543210"
+
+
+@pytest.mark.asyncio
+async def test_requirement_options_and_other_selection(client: AsyncClient, db_session, mock_whatsapp):
+    phone = "919940047777"
+
+    # Seed Service and MenuOption
+    service = Service(
+        name="Hospital Management HMS",
+        slug="software-hms",
+        description="OPD/IPD medical ERP",
+        category="Software Development",
+        sort_order=1,
+        active=True
+    )
+    db_session.add(service)
+    await db_session.commit()
+    await db_session.refresh(service)
+
+    menu_opt = MenuOption(
+        parent_state="ERP_MENU_1",
+        label="Hospital Management HMS",
+        value="software_hms",
+        next_state="COLLECT_NAME",
+        service_id=service.id,
+        sort_order=1,
+        active=True
+    )
+    db_session.add(menu_opt)
+    await db_session.commit()
+
+    # Start and select Hospital Management HMS (Option 6 -> ERP_MENU_1, then Option 1 -> HMS)
+    await client.post("/webhook", json=make_webhook_msg(phone, "Hi", "req_1"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "6", "req_2"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "1", "req_2b"))
+    
+    res = await db_session.execute(select(Conversation).join(User).where(User.phone_number == phone))
+    conv = res.scalar_one()
+
+    # If it went to PRODUCT_INFO or direct, start demo to reach COLLECT_NAME
+    if conv.state == "PRODUCT_INFO":
+        await client.post("/webhook", json=make_webhook_msg(phone, "Request Quote & Demo ✅", "req_3", "interactive", "btn_start_demo"))
+        await db_session.refresh(conv)
+
+    assert conv.state == "COLLECT_NAME"
+
+    # Step 1: Provide Name -> COLLECT_BUSINESS_TYPE
+    await client.post("/webhook", json=make_webhook_msg(phone, "Dr. Ramesh", "req_4"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_BUSINESS_TYPE"
+
+    # Step 2: Provide Business Type -> COLLECT_REQUIREMENT (sends interactive list)
+    await client.post("/webhook", json=make_webhook_msg(phone, "Multi-Speciality Hospital", "req_5"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_REQUIREMENT"
+
+    # Case A: User clicks "Other" -> COLLECT_CUSTOM_REQUIREMENT
+    await client.post("/webhook", json=make_webhook_msg(phone, "Other / Custom", "req_6", "interactive", "req_other"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_CUSTOM_REQUIREMENT"
+    assert any("Custom Requirement:" in str(msg) for msg in mock_whatsapp)
+
+    # User enters specific requirement text
+    await client.post("/webhook", json=make_webhook_msg(phone, "ICU ventilator monitoring & tele-consultation", "req_7"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_TIMELINE"
+    assert conv.session_data["requirement"] == "ICU ventilator monitoring & tele-consultation"
+
+
