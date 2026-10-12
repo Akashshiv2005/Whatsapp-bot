@@ -5,7 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import User, Conversation, Message, Service, MenuOption
 from app.services.message_parser import ParsedMessage
 from app.services.whatsapp import whatsapp_service
-from app.services.workflow_engine import workflow_engine, calculate_dummy_estimate, get_workflow_description
+from app.services.workflow_engine import (
+    workflow_engine,
+    calculate_dummy_estimate,
+    get_workflow_description,
+    BUSINESS_TYPE_OPTIONS,
+)
 from app.services.lead_service import lead_service
 from app.services.faq_service import faq_service
 from app.core.config import get_settings
@@ -149,6 +154,29 @@ class MessageHandler:
         )
         payload = res.get("payload") or {}
         body_text = payload.get("interactive", {}).get("body", {}).get("text", f"{title}: {description}")
+        await MessageHandler.log_message(
+            db=db,
+            conversation_id=conv.id,
+            direction="OUTBOUND",
+            message_type="interactive_list",
+            text=body_text,
+            raw_payload=payload or res
+        )
+        return res
+
+    @staticmethod
+    async def send_and_log_business_type_selection(
+        db: AsyncSession,
+        conv: Conversation,
+        to: str,
+        user_name: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Helper to send interactive business type options and record in DB."""
+        res = await workflow_engine.send_business_type_selection(to=to, user_name=user_name)
+        payload = res.get("payload") or {}
+        body_text = payload.get("interactive", {}).get("body", {}).get(
+            "text", "Step 2 of 8: What type of business or organization is this for?"
+        )
         await MessageHandler.log_message(
             db=db,
             conversation_id=conv.id,
@@ -1089,7 +1117,7 @@ class MessageHandler:
                 else:
                     await MessageHandler.send_and_log_submenu(db=db, conv=conv, to=phone, parent_state=parent_menu, title="Services", description="Select service:")
                 return
-            elif state == "COLLECT_BUSINESS_TYPE":
+            elif state in ["COLLECT_BUSINESS_TYPE", "COLLECT_CUSTOM_BUSINESS_TYPE"]:
                 conv.state = "COLLECT_NAME"
                 await db.commit()
                 await MessageHandler.send_and_log_text(db=db, conv=conv, to=phone, text="*Step 1 of 8:* What is your full name?")
@@ -1097,7 +1125,7 @@ class MessageHandler:
             elif state == "COLLECT_REQUIREMENT":
                 conv.state = "COLLECT_BUSINESS_TYPE"
                 await db.commit()
-                await MessageHandler.send_and_log_text(db=db, conv=conv, to=phone, text="*Step 2 of 8:* What type of business is this for?")
+                await MessageHandler.send_and_log_business_type_selection(db=db, conv=conv, to=phone, user_name=session_data.get("name"))
                 return
             elif state in ["COLLECT_TIMELINE", "COLLECT_CUSTOM_REQUIREMENT"]:
                 conv.state = "COLLECT_REQUIREMENT"
@@ -1159,26 +1187,89 @@ class MessageHandler:
             conv.state = "COLLECT_BUSINESS_TYPE"
             await db.commit()
 
-            await MessageHandler.send_and_log_text(
-                db=db, conv=conv, to=phone,
-                text=(
-                    f"Thanks {input_clean}! 👍\n\n"
-                    "*Step 2 of 8:* What type of business or organization is this for?\n"
-                    "_(e.g. Retail Shop, Clinic/Hospital, Education, Real Estate, Tech Startup, College Project)_"
-                )
+            await MessageHandler.send_and_log_business_type_selection(
+                db=db, conv=conv, to=phone, user_name=input_clean
             )
             return
 
         # ----------------------------------------------------
-        # Step 2: COLLECT_BUSINESS_TYPE
+        # Step 2: COLLECT_BUSINESS_TYPE (Selection based + Other)
         # ----------------------------------------------------
         elif state == "COLLECT_BUSINESS_TYPE":
-            if not input_clean:
-                await MessageHandler.send_and_log_text(db=db, conv=conv, to=phone, text="Please enter your business or project type:")
+            sel = (selection_id or input_clean).strip()
+            sel_lower = sel.lower()
+
+            # Check if user selected "Other" / "Custom"
+            is_other = (
+                sel_lower in ["biz_other", "other", "custom", "other / custom", "others"]
+                or sel_lower.startswith("other")
+            )
+            if input_clean.isdigit():
+                idx = int(input_clean)
+                if 1 <= idx <= len(BUSINESS_TYPE_OPTIONS):
+                    matched_opt = BUSINESS_TYPE_OPTIONS[idx - 1]
+                    if matched_opt["id"] == "biz_other":
+                        is_other = True
+                    else:
+                        sel = matched_opt["title"]
+                        sel_lower = sel.lower()
+
+            if is_other:
+                conv.previous_state = "COLLECT_BUSINESS_TYPE"
+                conv.state = "COLLECT_CUSTOM_BUSINESS_TYPE"
+                await db.commit()
+
+                await MessageHandler.send_and_log_text(
+                    db=db, conv=conv, to=phone,
+                    text=(
+                        "🏢 *Custom Business Type:*\n\n"
+                        "Please type your business or organization category:\n"
+                        "_(e.g. Automobile Showroom, Fitness Gym, Legal Firm, Interior Design, NGO)_"
+                    )
+                )
                 return
-            session_data["business_type"] = input_clean
+
+            chosen_biz_type = None
+            for opt in BUSINESS_TYPE_OPTIONS:
+                if sel == opt["id"] or sel_lower == opt["title"].lower():
+                    chosen_biz_type = opt["title"]
+                    break
+
+            if not chosen_biz_type and not input_clean.isdigit():
+                for opt in BUSINESS_TYPE_OPTIONS:
+                    if opt["title"].lower() in sel_lower or sel_lower in opt["title"].lower():
+                        chosen_biz_type = opt["title"]
+                        break
+
+            # Fallback for direct free-form text input
+            if not chosen_biz_type:
+                chosen_biz_type = input_clean
+
+            session_data["business_type"] = chosen_biz_type
             conv.session_data = session_data
             conv.previous_state = "COLLECT_BUSINESS_TYPE"
+            conv.state = "COLLECT_REQUIREMENT"
+            await db.commit()
+
+            await MessageHandler.send_and_log_requirement_selection(
+                db=db, conv=conv, to=phone, session_data=session_data
+            )
+            return
+
+        # ----------------------------------------------------
+        # Step 2b: COLLECT_CUSTOM_BUSINESS_TYPE (When "Other" was clicked)
+        # ----------------------------------------------------
+        elif state == "COLLECT_CUSTOM_BUSINESS_TYPE":
+            if not input_clean:
+                await MessageHandler.send_and_log_text(
+                    db=db, conv=conv, to=phone,
+                    text="Please enter your business or organization type:"
+                )
+                return
+
+            session_data["business_type"] = input_clean
+            conv.session_data = session_data
+            conv.previous_state = "COLLECT_CUSTOM_BUSINESS_TYPE"
             conv.state = "COLLECT_REQUIREMENT"
             await db.commit()
 

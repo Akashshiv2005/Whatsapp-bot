@@ -303,3 +303,64 @@ async def test_requirement_options_and_other_selection(client: AsyncClient, db_s
     assert conv.session_data["requirement"] == "ICU ventilator monitoring & tele-consultation"
 
 
+@pytest.mark.asyncio
+async def test_business_type_selection_and_other(client: AsyncClient, db_session, mock_whatsapp):
+    phone = "919940049999"
+
+    service = Service(
+        name="Business Website",
+        slug="website-business",
+        description="Corporate web presence",
+        category="Website Development",
+        sort_order=1,
+        active=True
+    )
+    db_session.add(service)
+    await db_session.commit()
+
+    menu_opt = MenuOption(
+        parent_state="WEBSITE_MENU",
+        label="Business Website",
+        value="website_business",
+        next_state="COLLECT_NAME",
+        service_id=service.id,
+        sort_order=1,
+        active=True
+    )
+    db_session.add(menu_opt)
+    await db_session.commit()
+
+    # Reach COLLECT_NAME
+    await client.post("/webhook", json=make_webhook_msg(phone, "Hi", "bt_1"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "1", "bt_2"))
+    await client.post("/webhook", json=make_webhook_msg(phone, "1", "bt_2b"))
+
+    res = await db_session.execute(select(Conversation).join(User).where(User.phone_number == phone))
+    conv = res.scalar_one()
+
+    if conv.state == "PRODUCT_INFO":
+        await client.post("/webhook", json=make_webhook_msg(phone, "Request Quote & Demo ✅", "bt_3", "interactive", "btn_start_demo"))
+        await db_session.refresh(conv)
+
+    assert conv.state == "COLLECT_NAME"
+
+    # Step 1: Name -> triggers send_business_type_selection
+    await client.post("/webhook", json=make_webhook_msg(phone, "Rajesh Kumar", "bt_4"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_BUSINESS_TYPE"
+    assert any("Business or Organization Type" in str(m) for m in mock_whatsapp)
+
+    # Step 2: Choose "Other / Custom"
+    await client.post("/webhook", json=make_webhook_msg(phone, "Other / Custom", "bt_5", "interactive", "biz_other"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_CUSTOM_BUSINESS_TYPE"
+    assert any("Custom Business Type:" in str(m) for m in mock_whatsapp)
+
+    # Step 2b: Enter custom business type
+    await client.post("/webhook", json=make_webhook_msg(phone, "Organic Dairy Farm", "bt_6"))
+    await db_session.refresh(conv)
+    assert conv.state == "COLLECT_REQUIREMENT"
+    assert conv.session_data["business_type"] == "Organic Dairy Farm"
+
+
+

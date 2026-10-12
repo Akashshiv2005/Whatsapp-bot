@@ -24,6 +24,18 @@ TIMELINE_OPTIONS = [
     {"id": "time_flexible", "title": "Flexible / Exploring", "description": "Early research & planning"},
 ]
 
+BUSINESS_TYPE_OPTIONS = [
+    {"id": "biz_retail", "title": "Retail & Supermarket", "description": "Shops, grocery, retail stores & showrooms"},
+    {"id": "biz_health", "title": "Clinic & Hospital", "description": "Medical center, dental, clinic & pharmacy"},
+    {"id": "biz_education", "title": "School & Education", "description": "Colleges, training centers & coaching academy"},
+    {"id": "biz_realestate", "title": "Real Estate & Builders", "description": "Property agents, construction & developers"},
+    {"id": "biz_tech", "title": "IT & Tech Startup", "description": "Software, apps, digital agency & tech firm"},
+    {"id": "biz_mfg", "title": "Manufacturing & Trades", "description": "Factory, distributors, wholesale & logistics"},
+    {"id": "biz_hospitality", "title": "Restaurant & Hotel", "description": "Cafes, food delivery, hotels & resorts"},
+    {"id": "biz_services", "title": "Professional Services", "description": "Legal, accounting, consulting & agencies"},
+    {"id": "biz_other", "title": "Other / Custom", "description": "Type your custom business or organization"},
+]
+
 PREFERRED_TIME_OPTIONS = [
     {"id": "slot_morning", "title": "Morning (10AM–1PM)", "description": "Business hours opening"},
     {"id": "slot_afternoon", "title": "Afternoon (2PM–5PM)", "description": "Mid-day discussion"},
@@ -462,6 +474,32 @@ class WorkflowEngine:
             key = "default"
 
         return REQUIREMENT_OPTIONS_MAP.get(key, REQUIREMENT_OPTIONS_MAP["default"])
+
+    @staticmethod
+    async def send_business_type_selection(to: str, user_name: Optional[str] = None) -> Dict[str, Any]:
+        """Send interactive business type selector (Step 2 of 8)."""
+        greeting = f"Thanks {user_name}! 👍\n\n" if user_name else ""
+        body = (
+            f"{greeting}"
+            "🏢 *Step 2 of 8: Business or Organization Type*\n\n"
+            "What type of business or organization is this project for?\n\n"
+            "👉 _Select an option from the list below, or choose *Other* to specify your own:_"
+        )
+
+        sections = [
+            {
+                "title": "Business Categories",
+                "rows": BUSINESS_TYPE_OPTIONS
+            }
+        ]
+
+        return await whatsapp_service.send_interactive_list(
+            to=to,
+            body_text=body,
+            button_label="Choose Business Type",
+            sections=sections,
+            footer="Select an option above",
+        )
 
     @staticmethod
     async def send_requirement_selection(
