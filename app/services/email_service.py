@@ -96,10 +96,6 @@ class EmailService:
                 <div class="field-value">{budget or 'Flexible'}</div>
             </div>
             <div class="field-card">
-                <div class="field-title">🏷️ Estimated Quote Scope</div>
-                <div class="field-value" style="color:#00a884; font-size:17px;">{estimated_amount or 'Custom Quote'}</div>
-            </div>
-            <div class="field-card">
                 <div class="field-title">📞 Contact Phone Number</div>
                 <div class="field-value">{phone_number}</div>
             </div>
